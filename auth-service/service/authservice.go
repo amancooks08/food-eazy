@@ -3,10 +3,11 @@ package service
 import (
 	"auth-service/errors"
 	"auth-service/models"
+	"auth-service/utils"
 	"regexp"
 )
 
-func RegisterUser(name string, email string, password string, phoneNumber string) (err error) {
+func RegisterUser(name string, email string, password string, phoneNumber string, role string) (err error) {
 	err = validateUserDetails(email, password, phoneNumber)
 	if err != nil {
 		return err
@@ -16,10 +17,29 @@ func RegisterUser(name string, email string, password string, phoneNumber string
 		Email:       email,
 		Password:    password,
 		PhoneNumber: phoneNumber,
+		Role:  		 role,
 	}
+
+	newUser.Password, _ = utils.HashPassword(newUser.Password)
 
 	err = models.RegisterUser(&newUser)
 	return err
+}
+
+func LoginUser(email string, password string) (token string, err error) {
+	if len(email) == 0 || len(password) == 0 {
+		return "", errors.ErrEmptyField
+	}
+	if !ValidateEmail(email) {
+		return "", errors.ErrInvalidEmail
+	}
+	user, err := models.GetUserByEmail(email)
+	if err != nil {
+		return "", err
+	}
+	
+
+	return
 }
 
 func validateUserDetails(email string, password string, phoneNumber string) (err error) {

@@ -15,6 +15,7 @@ type User struct {
 	Email       string `gorm:"column:email; unique; not null"`
 	Password    string `gorm:"column:password; not null"`
 	PhoneNumber string `gorm:"column:phoneNumber; unique; not null"`
+	Role 		string `gorm:"column:role; not null"`
 }
 
 func InitAuthModels(database *gorm.DB) {

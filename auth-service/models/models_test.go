@@ -50,6 +50,7 @@ func (suite *AuthModelsTestSuite) TestModels_RegisterUser() {
 			Email:       "test1@gmail.com",
 			Password:    "test123",
 			PhoneNumber: "1234567890",
+			Role: 	     "USER",
 		}
 
 		err := RegisterUser(&testUser)
@@ -68,6 +69,7 @@ func (suite *AuthModelsTestSuite) TestModels_RegisterUser() {
 			Email:       "test2@mail.com",
 			Password:    "test123",
 			PhoneNumber: "1234567891",
+			Role: 	     "USER",
 		}
 
 		err1 := RegisterUser(&testUser)
@@ -78,6 +80,7 @@ func (suite *AuthModelsTestSuite) TestModels_RegisterUser() {
 			Email:       "test2@mail.com",
 			Password:    "test123",
 			PhoneNumber: "1234567893",
+			Role : 	     "USER",
 		}
 
 		err2 := RegisterUser(&duplicateUser)
@@ -91,6 +94,7 @@ func (suite *AuthModelsTestSuite) TestModels_RegisterUser() {
 			Email:       "test3@mailcom",
 			Password:    "test123",
 			PhoneNumber: "1234567893",
+			Role: 	     "USER",
 		}
 
 		err1 := RegisterUser(&testUser)
@@ -101,6 +105,7 @@ func (suite *AuthModelsTestSuite) TestModels_RegisterUser() {
 			Email:       "test4@mail.com",
 			Password:    "test123",
 			PhoneNumber: "1234567893",
+			Role: 	     "USER",
 		}
 
 		err2 := RegisterUser(&duplicateUser)
@@ -118,6 +123,7 @@ func (suite *AuthModelsTestSuite) TestModels_GetUserByEmail() {
 			Email:       "test5@mail.com",
 			Password:   "test1234",
 			PhoneNumber: "1234567894",
+			Role: 	     "USER",
 		}
 
 		err1 := RegisterUser(&testUser)

@@ -7,6 +7,7 @@ message RegisterUserRequest {
     string email = 2;
     string password = 3;
     int32 phoneNumber = 4;
+    Role role = 5;
 }
 
 message RegisterUserResponse {
@@ -29,6 +30,11 @@ message ValidateTokenRequest {
 
 message ValidateTokenResponse {
     string message = 1;
+}
+
+enum Role {
+    USER = 0;
+    ADMIN = 1;
 }
 
 service AuthService {

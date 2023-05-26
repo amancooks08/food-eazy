@@ -41,6 +41,7 @@ func (suite *AuthServiceTestSuite) TestRegisterUser() {
 		email 	  		 string
 		password  		 string
 		phoneNumber 	 string
+		role 	  		 string
 	}
 	tests := []struct {
 		name    string
@@ -54,6 +55,7 @@ func (suite *AuthServiceTestSuite) TestRegisterUser() {
 				email: "test.user@gmail.com",
 				password: "test1234",
 				phoneNumber: "1234567890",
+				role: "USER",
 			},
 			wantErr: false,
 		},
@@ -130,10 +132,61 @@ func (suite *AuthServiceTestSuite) TestRegisterUser() {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T){
-			err := RegisterUser(tt.args.name, tt.args.email, tt.args.password, tt.args.phoneNumber)
+			err := RegisterUser(tt.args.name, tt.args.email, tt.args.password, tt.args.phoneNumber, tt.args.role)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+
+func (suite *AuthServiceTestSuite) TestLoginUser() {
+	t := suite.T()
+	type args struct {
+		email 	  		 string
+		password  		 string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Login user with valid details",
+			args: args{
+				email: "test@gmail.com",
+				password: "test1234",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Login user with invalid email",
+			args: args{
+				email: "test.user",
+				password: "test123",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Login user with invalid password",
+			args: args{
+				email: "test@mail.com",
+				password: "test1233",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T){
+			token, err := LoginUser(tt.args.email, tt.args.password)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NotEmpty(t, token)
 				assert.NoError(t, err)
 			}
 		})
