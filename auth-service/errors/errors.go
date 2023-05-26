@@ -12,6 +12,7 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 	ErrInvalidUser = errors.New("invalid user")
 	ErrCreateUser = errors.New("failed to create user")
+	ErrTokenGeneration = errors.New("failed to generate token")
 	ErrInvalidPhoneNumber = errors.New("invalid phone number")
 	ErrInvalidEmail = errors.New("invalid email")
 	ErrDuplicateEmail = errors.New("email already exists")
