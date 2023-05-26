@@ -50,14 +50,14 @@ func LoginUser(email string, password string) (token string, err error) {
 	return
 }
 
-func ValidateUser(token string) (int, string) {
+func ValidateUser(token string) (int, error) {
 	claims, err := utils.ValidateToken(token)
 	if err != nil {
-		return http.StatusUnauthorized, errors.ErrInvalidToken.Error()
+		return http.StatusUnauthorized, errors.ErrInvalidToken
 	}
 	_, err = models.GetUserByEmail(claims["email"].(string))
 	if err == nil {
-		return http.StatusOK, ""
+		return http.StatusOK, nil
 	}
-	return http.StatusUnauthorized, errors.ErrInvalidToken.Error()
+	return http.StatusUnauthorized, errors.ErrInvalidToken
 }
