@@ -4,9 +4,10 @@ import (
 	"time"
 	"os"
 	jwt "github.com/dgrijalva/jwt-go"
+	"auth-service/errors"
 )
 
-var securiy_key = []byte(os.Getenv("SECURITY_KEY"))
+var security_key = []byte(os.Getenv("SECURITY_KEY"))
 
 func GenerateToken(email, role string) (token string, err error) {
 	tokenExpirationTime := time.Now().Add(time.Minute * 30)
@@ -15,6 +16,33 @@ func GenerateToken(email, role string) (token string, err error) {
 		"role":  role,
 		"exp":   tokenExpirationTime.Unix(),
 	})
-	token, err = tokenObject.SignedString(securiy_key)
+	token, err = tokenObject.SignedString(security_key)
 	return token, err
+}
+
+
+func ValidateToken(token string) (claims jwt.MapClaims, err error) {
+	tokenObject, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+
+		return []byte(security_key), nil
+	})
+
+	if err != nil {
+		return nil, errors.ErrUnauthorized
+	}
+
+	if !tokenObject.Valid {
+		return nil, errors.ErrUnauthorized
+	}
+
+	claims, ok := tokenObject.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, errors.ErrUnauthorized
+	}
+
+	return claims, nil
 }
