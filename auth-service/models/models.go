@@ -2,6 +2,7 @@ package models
 
 import (
 	"auth-service/errors"
+
 	logger "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -10,12 +11,12 @@ var db *gorm.DB
 
 type User struct {
 	gorm.Model
-	ID 		    uint   `gorm:"primaryKey; autoIncrement; not null"`
+	ID          uint   `gorm:"primaryKey; autoIncrement; not null"`
 	Name        string `gorm:"column:name;"`
 	Email       string `gorm:"column:email; unique; not null"`
 	Password    string `gorm:"column:password; not null"`
 	PhoneNumber string `gorm:"column:phoneNumber; unique; not null"`
-	Role 		string `gorm:"column:role; not null"`
+	Role        string `gorm:"column:role; not null"`
 }
 
 func InitAuthModels(database *gorm.DB) {
