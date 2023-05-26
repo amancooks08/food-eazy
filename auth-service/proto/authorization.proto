@@ -6,7 +6,7 @@ message RegisterUserRequest {
     string name = 1;
     string email = 2;
     string password = 3;
-    int32 phoneNumber = 4;
+    string phoneNumber = 4;
     Role role = 5;
 }
 
