@@ -29,7 +29,8 @@ message ValidateTokenRequest {
 }
 
 message ValidateTokenResponse {
-    string message = 1;
+    int32 statusCode = 1;
+    string message = 2;
 }
 
 enum Role {
