@@ -108,3 +108,40 @@ func (suite *AuthModelsTestSuite) TestModels_RegisterUser() {
 		assert.Equal(t, err2.Error(), errors.ErrCreateUser.Error())
 	})
 }
+
+func (suite *AuthModelsTestSuite) TestModels_GetUserByEmail() {
+	t := suite.T()
+
+	t.Run("Get user by email", func(t *testing.T) {
+		testUser := User{
+			Name:        "test5",
+			Email:       "test5@mail.com",
+			Password:   "test1234",
+			PhoneNumber: "1234567894",
+		}
+
+		err1 := RegisterUser(&testUser)
+		assert.NoError(t, err1)
+
+		user, err2 := GetUserByEmail(testUser.Email)
+		assert.NoError(t, err2)
+		assert.Equal(t, user.Name, testUser.Name)
+		assert.Equal(t, user.Email, testUser.Email)
+		assert.Equal(t, user.Password, testUser.Password)
+		assert.Equal(t, user.PhoneNumber, testUser.PhoneNumber)
+	})
+
+	t.Run("Get user by email with non-existent email", func(t *testing.T) {
+		user, err := GetUserByEmail("test@gg.com")
+		assert.Error(t, err)
+		assert.Equal(t, err.Error(), errors.ErrUserNotFound.Error())
+		assert.Nil(t, user)
+	})
+
+	t.Run("Get user by email with empty email", func(t *testing.T) {
+		user, err := GetUserByEmail("")
+		assert.Error(t, err)
+		assert.Equal(t, err.Error(), errors.ErrInvalidEmail.Error())
+		assert.Nil(t, user)
+	})
+}
