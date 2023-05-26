@@ -4,6 +4,7 @@ import (
 	"auth-service/errors"
 	"auth-service/models"
 	"auth-service/utils"
+	"net/http"
 
 	logger "github.com/sirupsen/logrus"
 )
@@ -47,4 +48,16 @@ func LoginUser(email string, password string) (token string, err error) {
 		return "", errors.ErrTokenGeneration
 	}
 	return
+}
+
+func ValidateUser(token string) (int, string) {
+	claims, err := utils.ValidateToken(token)
+	if err != nil {
+		return http.StatusUnauthorized, errors.ErrInvalidToken.Error()
+	}
+	_, err = models.GetUserByEmail(claims["email"].(string))
+	if err == nil {
+		return http.StatusOK, ""
+	}
+	return http.StatusUnauthorized, errors.ErrInvalidToken.Error()
 }
