@@ -5,6 +5,8 @@ import (
 	"auth-service/models"
 	"auth-service/utils"
 	"regexp"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 func RegisterUser(name string, email string, password string, phoneNumber string, role string) (err error) {
@@ -37,8 +39,14 @@ func LoginUser(email string, password string) (token string, err error) {
 	if err != nil {
 		return "", err
 	}
-	
-
+	if !utils.CheckPasswordHash(password, user.Password) {
+		return "", errors.ErrInvalidPassword
+	}
+	token, err = utils.GenerateToken(user.Email, user.Role)
+	if err != nil {
+		logger.WithField("error", err).Error(errors.ErrTokenGeneration.Error())
+		return "", errors.ErrTokenGeneration
+	}
 	return
 }
 
