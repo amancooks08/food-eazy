@@ -19,7 +19,7 @@ var (
 	ErrInvalidEmail = errors.New("invalid email")
 	ErrDuplicateEmail = errors.New("email already exists")
 	ErrEmptyField = errors.New("empty field")
-
+	ErrInvalidRole = errors.New("invalid role")
 	ErrInvalidPassword = errors.New("invalid password")
 	ErrHashPassword	= errors.New("failed to hash password")
 	ErrShortPassword = errors.New("password must be atleast 8 characters long")
