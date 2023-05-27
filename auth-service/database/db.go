@@ -2,9 +2,8 @@ package database
 
 import (
 	"auth-service/errors"
-	"fmt"
-	"os"
 	"auth-service/models"
+
 	logger "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,7 +15,7 @@ var (
 
 func InitDB() error {
 	var err error
-	dbURI := fmt.Sprintf("host=localhost user=%s password=%s dbname=%s port=%s sslmode=disable", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"), os.Getenv("DB_PORT"))
+	dbURI := "host=localhost user=amandeep password=Aman@123 dbname=testdb port=5432 sslmode=disable"
 	db, err = gorm.Open(postgres.Open(dbURI), &gorm.Config{})
 	if err != nil {
 		logger.WithField("error", err).Fatal("failed to connect database")

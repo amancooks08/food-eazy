@@ -11,3 +11,4 @@ func Load() {
 	viper.ReadInConfig()
 	viper.AutomaticEnv()
 }
+
