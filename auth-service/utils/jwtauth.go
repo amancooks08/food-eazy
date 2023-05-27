@@ -10,6 +10,12 @@ import (
 var security_key = []byte(os.Getenv("SECURITY_KEY"))
 
 func GenerateToken(email, role string) (token string, err error) {
+	if len(email) == 0 || len(role) == 0 {
+		return "", errors.ErrEmptyField
+	}
+	if role != "ADMIN" && role != "USER" {
+		return "", errors.ErrInvalidRole
+	}
 	tokenExpirationTime := time.Now().Add(time.Minute * 30)
 	tokenObject := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": email,
