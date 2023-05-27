@@ -10,6 +10,9 @@ import (
 )
 
 func RegisterUser(name string, email string, password string, phoneNumber string, role string) (err error) {
+	if len(name) == 0 || len(email) == 0 || len(password) == 0 || len(phoneNumber) == 0 || len(role) == 0 {
+		return errors.ErrEmptyField
+	}
 	err = utils.ValidateUserDetails(email, password, phoneNumber)
 	if err != nil {
 		return err
@@ -59,5 +62,5 @@ func ValidateUser(token string) (int, error) {
 	if err == nil {
 		return http.StatusOK, nil
 	}
-	return http.StatusUnauthorized, errors.ErrInvalidToken
+	return http.StatusUnauthorized, err
 }

@@ -1,7 +1,9 @@
 package service
 
 import (
+	"auth-service/errors"
 	"auth-service/models"
+	"auth-service/utils"
 	"net/http"
 	"testing"
 
@@ -55,7 +57,7 @@ func (suite *AuthServiceTestSuite) TestRegisterUser() {
 				name:        "test",
 				email:       "test.user@gmail.com",
 				password:    "test1234",
-				phoneNumber: "1234567890",
+				phoneNumber: "9234567891",
 				role:        "USER",
 			},
 			wantErr: false,
@@ -145,52 +147,69 @@ func (suite *AuthServiceTestSuite) TestRegisterUser() {
 
 func (suite *AuthServiceTestSuite) TestLoginUser() {
 	t := suite.T()
-	type args struct {
-		email    string
-		password string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name: "Login user with valid details",
-			args: args{
-				email:    "test@gmail.com",
-				password: "test1234",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Login user with invalid email",
-			args: args{
-				email:    "test.user",
-				password: "test123",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Login user with invalid password",
-			args: args{
-				email:    "test@mail.com",
-				password: "test1233",
-			},
-			wantErr: true,
-		},
-	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			token, err := LoginUser(tt.args.email, tt.args.password)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NotEmpty(t, token)
-				assert.NoError(t, err)
-			}
-		})
-	}
+	t.Run("Login user with valid credentials", func(t *testing.T) {
+		testUser := models.User{
+			Name:        "testing",
+			Email:       "test1@mail.com",
+			Password:    "test1234",
+			PhoneNumber: "1234567890",
+			Role:        "USER",
+		}
+
+		err := RegisterUser(testUser.Name, testUser.Email, testUser.Password, testUser.PhoneNumber, testUser.Role)
+		assert.NoError(t, err)
+
+		token, err := LoginUser(testUser.Email, testUser.Password)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, token)
+	})
+
+	t.Run("Login user with invalid password", func(t *testing.T) {
+		testUser := models.User{
+			Name:        "testing",
+			Email:       "test2@mail.com",
+			Password:    "test1234",
+			PhoneNumber: "1234562890",
+			Role:        "USER",
+		}
+
+		err := RegisterUser(testUser.Name, testUser.Email, testUser.Password, testUser.PhoneNumber, testUser.Role)
+		assert.NoError(t, err)
+
+		token, err := LoginUser(testUser.Email, "test123")
+		assert.Error(t, err)
+		assert.Empty(t, token)
+		assert.Equal(t, errors.ErrInvalidPassword.Error(), err.Error())
+	})
+
+	t.Run("Login user with unregistered email", func(t *testing.T) {
+		token, err := LoginUser("testttt@mail.com", "test1234")
+		assert.Error(t, err)
+		assert.Empty(t, token)
+		assert.Equal(t, errors.ErrUserNotFound.Error(), err.Error())
+	})
+
+	t.Run("Login user with empty email", func(t *testing.T) {
+		token, err := LoginUser("", "test1234")
+		assert.Error(t, err)
+		assert.Empty(t, token)
+		assert.Equal(t, errors.ErrEmptyField.Error(), err.Error())
+	})
+
+	t.Run("Login user with empty password", func(t *testing.T) {
+		token, err := LoginUser("test1@gmail.com", "")
+		assert.Error(t, err)
+		assert.Empty(t, token)
+		assert.Equal(t, errors.ErrEmptyField.Error(), err.Error())
+	})
+
+	t.Run("Login user with invalid email", func(t *testing.T) {
+		token, err := LoginUser("test1gmail.com", "test1234")
+		assert.Error(t, err)
+		assert.Empty(t, token)
+		assert.Equal(t, errors.ErrInvalidEmail.Error(), err.Error())
+	})
 }
 
 func (suite *AuthServiceTestSuite) TestValidateUser() {
@@ -201,7 +220,7 @@ func (suite *AuthServiceTestSuite) TestValidateUser() {
 			Name:        "testing1",
 			Email:       "testing1@mail.com",
 			Password:    "test1234",
-			PhoneNumber: "9234567890",
+			PhoneNumber: "9234567898",
 			Role:        "USER",
 		}
 		err := RegisterUser(testUser.Name, testUser.Email, testUser.Password, testUser.PhoneNumber, testUser.Role)
@@ -209,14 +228,36 @@ func (suite *AuthServiceTestSuite) TestValidateUser() {
 		token, err := LoginUser(testUser.Email, testUser.Password)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
-		statusCode, message := ValidateUser(token)
+		statusCode, err := ValidateUser(token)
 		assert.Equal(t, http.StatusOK, statusCode)
-		assert.Equal(t, "", message)
+		assert.NoError(t, err)
 	})
 
 	t.Run("Validate user with invalid token", func(t *testing.T) {
-		statusCode, message := ValidateUser("invalid.token")
+		statusCode, err := ValidateUser("invalid.token")
 		assert.Equal(t, http.StatusUnauthorized, statusCode)
-		assert.Equal(t, "invalid token", message)
+		assert.Error(t, err)
+		assert.Equal(t, errors.ErrInvalidToken.Error(), err.Error())
+	})
+
+	t.Run("Validate user hen user couldn;t be fetched from db", func(t *testing.T) {
+		testUser := models.User{
+			Name:        "testing2",
+			Email:       "testing23@mail.com",
+			Password:   "test1234",
+			PhoneNumber: "9234567890",
+			Role:        "USER",
+		}
+		err := RegisterUser(testUser.Name, testUser.Email, testUser.Password, testUser.PhoneNumber, testUser.Role)
+		assert.NoError(t, err)
+
+		invalidtoken, err := utils.GenerateToken("invalid.email", "USER")
+        assert.NoError(t, err)
+		assert.NotEmpty(t, invalidtoken)
+
+		statusCode, err := ValidateUser(invalidtoken)
+		assert.Equal(t, http.StatusUnauthorized, statusCode)
+		assert.Error(t, err)
+		assert.Equal(t, errors.ErrUserNotFound.Error(), err.Error())
 	})
 }
