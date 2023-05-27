@@ -1,7 +1,7 @@
 DB_HOST: "localhost"
 DB_PORT: 5432
-DB_USER: "postgres"
-DB_PASSWORD: "1234"
+DB_USER: "amandeep"
+DB_PASSWORD: "Aman@123"
 DB_NAME: "authdb"
 TESTDB_NAME: "testdb"
 SECURITY_KEY: "secret@1234"
