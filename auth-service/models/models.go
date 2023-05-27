@@ -37,7 +37,7 @@ func RegisterUser(user *User) error {
 
 func GetUserByEmail(email string) (*User, error) {
 	if email == "" {
-		return nil, errors.ErrInvalidEmail
+		return nil, errors.ErrEmptyField
 	}
 	user := &User{}
 	if err := db.Where("email = ?", email).First(user).Error; err != nil {

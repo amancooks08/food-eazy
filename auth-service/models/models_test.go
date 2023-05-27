@@ -147,7 +147,7 @@ func (suite *AuthModelsTestSuite) TestModels_GetUserByEmail() {
 	t.Run("Get user by email with empty email", func(t *testing.T) {
 		user, err := GetUserByEmail("")
 		assert.Error(t, err)
-		assert.Equal(t, err.Error(), errors.ErrInvalidEmail.Error())
+		assert.Equal(t, err.Error(), errors.ErrEmptyField.Error())
 		assert.Nil(t, user)
 	})
 }
