@@ -18,6 +18,7 @@ func (s *GRPCServer) RegisterUser(ctx context.Context, req *proto.RegisterUserRe
 	}
 
 	return &proto.RegisterUserResponse{
+		StatusCode: 201,
 		Message: "User registered successfully",
 	}, nil
 }
@@ -29,6 +30,7 @@ func (s *GRPCServer) LoginUser(ctx context.Context, req *proto.LoginUserRequest)
 	}
 
 	return &proto.LoginUserResponse{
+		StatusCode: 200,
 		Token: token,
 	}, nil
 }
