@@ -14,7 +14,10 @@ type GRPCServer struct {
 func (s *GRPCServer) RegisterUser(ctx context.Context, req *proto.RegisterUserRequest) (*proto.RegisterUserResponse, error) {
 	err := service.RegisterUser(req.Name, req.Email, req.Password, req.PhoneNumber, req.Role.String())
 	if err != nil {
-		return nil, err
+		return &proto.RegisterUserResponse{
+			StatusCode: 400,
+			Message: "user not registered",
+		}, err
 	}
 
 	return &proto.RegisterUserResponse{
