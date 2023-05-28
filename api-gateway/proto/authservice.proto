@@ -11,7 +11,8 @@ message RegisterUserRequest {
 }
 
 message RegisterUserResponse {
-    string message = 1;
+    int32 statusCode = 1;
+    string message = 2;
 }
 
 message LoginUserRequest {
@@ -20,8 +21,9 @@ message LoginUserRequest {
 }
 
 message LoginUserResponse {
-    string message = 1;
-    string token = 2;
+    int32 statusCode = 1;
+    string message = 2;
+    string token = 3;
 }
 
 message ValidateTokenRequest {
