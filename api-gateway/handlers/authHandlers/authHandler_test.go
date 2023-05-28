@@ -54,10 +54,15 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 		}
 
 		expectedResponse := proto.RegisterUserResponse{
+			StatusCode: http.StatusCreated,
 			Message: "User registered successfully",
 		}
 
-		exp, err := json.Marshal(expectedResponse)
+		resp := domain.Message{
+			Message: expectedResponse.Message,
+		}
+
+		exp, err := json.Marshal(resp)
 		if err != nil {
 			t.Errorf("error while marshalling expected response: %v", err)
 		}
@@ -78,4 +83,10 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 		assert.Equal(t, http.StatusCreated, res.Code)
 		assert.Equal(t, string(exp), res.Body.String())
 	})
+
+	t.Run("expect to return 400 when request body is invalid", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.RegisterUserRequest{
+			Name:        "test1",
+			Email:       "
 }

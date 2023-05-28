@@ -14,7 +14,6 @@ func RegisterUser(authService proto.AuthServiceClient) http.HandlerFunc {
 			rw.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		fmt.Println(req.Body)
 		var requestBody domain.RegisterUserRequest
 
 		if err := json.NewDecoder(req.Body).Decode(&requestBody); err != nil {
@@ -57,7 +56,7 @@ func RegisterUser(authService proto.AuthServiceClient) http.HandlerFunc {
 			return
 		}
 
-		rw.WriteHeader(http.StatusCreated)
+		rw.WriteHeader(int(resp.StatusCode))
 		rw.Header().Set("Content-Type", "application/json")
 		rw.Write(res)
 	})
