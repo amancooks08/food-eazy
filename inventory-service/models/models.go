@@ -50,7 +50,6 @@ func GetItem(id uint) (*Item, error) {
 	return item, nil
 }
 
-
 func GetAllItems() ([]*Item, error) {
 	items := []*Item{}
 	err := db.Find(&items).Error
@@ -58,4 +57,17 @@ func GetAllItems() ([]*Item, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+func UpdateItemQuantity(id uint, quantity uint) error {
+	item, err := GetItem(id)
+	if err != nil {
+		return err
+	}
+	item.Quantity = quantity
+	err = db.Save(item).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
