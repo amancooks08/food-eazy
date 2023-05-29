@@ -11,6 +11,6 @@ var (
 	ErrItemNotFound = errors.New("item not found")
 	ErrInvalidItem = errors.New("invalid item")
 	ErrAddItem = errors.New("failed to add item")
-	
+	ErrItemExists = errors.New("item already exists")
 	ErrEmptyField = errors.New("empty field")
 )

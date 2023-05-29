@@ -29,9 +29,11 @@ func CreateItem(item *Item) (*Item, error) {
 		return nil, errors.ErrInvalidItem
 	}
 	err := db.Create(item).Error
-	if err != nil {
-		logger.WithField("error", err.Error).Error(errors.ErrAddItem.Error())
-		return nil, errors.ErrAddItem
+	if err != nil && err.Error() == "UNIQUE constraint failed: items.name" {
+		return nil, errors.ErrItemExists
+	} else if err != nil {
+		logger.WithField("error", err.Error()).Error(err.Error())
+		return nil, err
 	}
 	return item, nil
 }
@@ -39,7 +41,10 @@ func CreateItem(item *Item) (*Item, error) {
 func GetItem(id uint) (*Item, error) {
 	item := &Item{}
 	err := db.Where("id = ?", id).First(item).Error
-	if err != nil {
+	if err != nil && err.Error() == "record not found" {
+		return nil, errors.ErrItemNotFound
+	} else if err != nil {
+		logger.WithField("error", err.Error()).Error(err.Error())
 		return nil, err
 	}
 	return item, nil
