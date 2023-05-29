@@ -28,6 +28,7 @@ message LoginUserResponse {
 
 message ValidateTokenRequest {
     string token = 1;
+    Role role = 2;
 }
 
 message ValidateTokenResponse {

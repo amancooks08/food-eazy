@@ -3,7 +3,6 @@ package service
 import (
 	"auth-service/errors"
 	"auth-service/models"
-	"auth-service/utils"
 	"net/http"
 	"testing"
 
@@ -228,36 +227,34 @@ func (suite *AuthServiceTestSuite) TestValidateUser() {
 		token, err := LoginUser(testUser.Email, testUser.Password)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
-		statusCode, err := ValidateUser(token)
+		statusCode, err := ValidateUser(token, testUser.Role)
 		assert.Equal(t, http.StatusOK, statusCode)
 		assert.NoError(t, err)
 	})
 
 	t.Run("Validate user with invalid token", func(t *testing.T) {
-		statusCode, err := ValidateUser("invalid.token")
+		statusCode, err := ValidateUser("invalid.token", "USER")
 		assert.Equal(t, http.StatusUnauthorized, statusCode)
 		assert.Error(t, err)
 		assert.Equal(t, errors.ErrInvalidToken.Error(), err.Error())
 	})
 
-	t.Run("Validate user hen user couldn;t be fetched from db", func(t *testing.T) {
+	t.Run("Validate user with invalid role", func(t *testing.T) {
 		testUser := models.User{
-			Name:        "testing2",
-			Email:       "testing23@mail.com",
-			Password:   "test1234",
-			PhoneNumber: "9234567890",
+			Name:        "testing58",
+			Email:       "testing144@mail.com",
+			Password:    "test1234",
+			PhoneNumber: "9234567804",
 			Role:        "USER",
 		}
 		err := RegisterUser(testUser.Name, testUser.Email, testUser.Password, testUser.PhoneNumber, testUser.Role)
 		assert.NoError(t, err)
-
-		invalidtoken, err := utils.GenerateToken("invalid.email", "USER")
-        assert.NoError(t, err)
-		assert.NotEmpty(t, invalidtoken)
-
-		statusCode, err := ValidateUser(invalidtoken)
+		token, err := LoginUser(testUser.Email, testUser.Password)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, token)
+		statusCode, err := ValidateUser(token, "TEST")
 		assert.Equal(t, http.StatusUnauthorized, statusCode)
 		assert.Error(t, err)
-		assert.Equal(t, errors.ErrUserNotFound.Error(), err.Error())
+		assert.Equal(t, errors.ErrInvalidRole.Error(), err.Error())
 	})
 }

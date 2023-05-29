@@ -53,14 +53,16 @@ func LoginUser(email string, password string) (token string, err error) {
 	return
 }
 
-func ValidateUser(token string) (int, error) {
+func ValidateUser(token string, role string) (int, error) {
+	if len(token) == 0 || len(role) == 0 {
+		return http.StatusBadRequest, errors.ErrEmptyField
+	}
 	claims, err := utils.ValidateToken(token)
 	if err != nil {
-		return http.StatusUnauthorized, errors.ErrInvalidToken
+		return http.StatusForbidden, errors.ErrInvalidToken
 	}
-	_, err = models.GetUserByEmail(claims["email"].(string))
-	if err == nil {
-		return http.StatusOK, nil
+	if claims["role"] != role {
+		return http.StatusForbidden, errors.ErrInvalidRole
 	}
-	return http.StatusUnauthorized, err
+	return http.StatusOK, nil
 }

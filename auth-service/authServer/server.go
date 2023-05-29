@@ -2,6 +2,7 @@ package authServer
 
 import (
 	"context"
+	"net/http"
 
 	"auth-service/errors"
 	proto "auth-service/proto/authpb"
@@ -16,14 +17,14 @@ func (s *GRPCServer) RegisterUser(ctx context.Context, req *proto.RegisterUserRe
 	err := service.RegisterUser(req.Name, req.Email, req.Password, req.PhoneNumber, req.Role.String())
 	if err != nil {
 		return &proto.RegisterUserResponse{
-			StatusCode: 400,
-			Message: "user not registered",
+			StatusCode: http.StatusBadRequest,
+			Message:    "user not registered",
 		}, err
 	}
 
 	return &proto.RegisterUserResponse{
-		StatusCode: 201,
-		Message: "User registered successfully",
+		StatusCode: http.StatusOK,
+		Message:    "User registered successfully",
 	}, nil
 }
 
@@ -32,20 +33,20 @@ func (s *GRPCServer) LoginUser(ctx context.Context, req *proto.LoginUserRequest)
 	if err != nil {
 		if err.Error() == errors.ErrDuplicateEmail.Error() {
 			return &proto.LoginUserResponse{
-				StatusCode: 409,
-				Token: "",
+				StatusCode: http.StatusConflict,
+				Token:      "",
 			}, err
 		}
 	}
 
 	return &proto.LoginUserResponse{
-		StatusCode: 200,
-		Token: token,
+		StatusCode: http.StatusOK,
+		Token:      token,
 	}, nil
 }
 
 func (s *GRPCServer) ValidateUser(ctx context.Context, req *proto.ValidateTokenRequest) (*proto.ValidateTokenResponse, error) {
-	status, err := service.ValidateUser(req.Token)
+	status, err := service.ValidateUser(req.Token, req.Role.String())
 	if err != nil {
 		return nil, err
 	}
@@ -55,4 +56,3 @@ func (s *GRPCServer) ValidateUser(ctx context.Context, req *proto.ValidateTokenR
 		Message:    "Token is valid",
 	}, nil
 }
-

@@ -10,7 +10,7 @@ message RegisterUserRequest {
     Role role = 5;
 }
 
-message RegisterUserResponse {  
+message RegisterUserResponse {
     int32 statusCode = 1;
     string message = 2;
 }
@@ -21,13 +21,14 @@ message LoginUserRequest {
 }
 
 message LoginUserResponse {
-    int32  statusCode = 1;
+    int32 statusCode = 1;
     string message = 2;
     string token = 3;
 }
 
 message ValidateTokenRequest {
     string token = 1;
+    Role role = 2;
 }
 
 message ValidateTokenResponse {
