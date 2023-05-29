@@ -98,7 +98,6 @@ func LoginUser(authService proto.AuthServiceClient) http.HandlerFunc {
 			Message:    resp.Message,
 			Token:      resp.Token,
 		}
-		fmt.Println(response)
 		res, err := json.Marshal(response)
 		if err != nil {
 			message := domain.Message{

@@ -17,6 +17,5 @@ func main() {
 	server := negroni.Classic()
 	server.UseHandler(router)
 
-	
-	
+	server.Run(":8002")
 }
