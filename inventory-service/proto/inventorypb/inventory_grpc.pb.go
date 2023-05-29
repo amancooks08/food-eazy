@@ -33,7 +33,7 @@ const (
 type InventoryServiceClient interface {
 	AddItem(ctx context.Context, in *AddItemRequest, opts ...grpc.CallOption) (*AddItemResponse, error)
 	GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
-	GetAllItems(ctx context.Context, in *GetAllItemsRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
+	GetAllItems(ctx context.Context, in *GetAllItemsRequest, opts ...grpc.CallOption) (*GetAllItemsResponse, error)
 	AddQuantity(ctx context.Context, in *AddQuantityRequest, opts ...grpc.CallOption) (*AddQuantityResponse, error)
 	LowerQuantity(ctx context.Context, in *LowerQuantityRequest, opts ...grpc.CallOption) (*LowerQuantityResponse, error)
 	DeleteItem(ctx context.Context, in *DeleteItemRequest, opts ...grpc.CallOption) (*DeleteItemResponse, error)
@@ -65,8 +65,8 @@ func (c *inventoryServiceClient) GetItem(ctx context.Context, in *GetItemRequest
 	return out, nil
 }
 
-func (c *inventoryServiceClient) GetAllItems(ctx context.Context, in *GetAllItemsRequest, opts ...grpc.CallOption) (*GetItemResponse, error) {
-	out := new(GetItemResponse)
+func (c *inventoryServiceClient) GetAllItems(ctx context.Context, in *GetAllItemsRequest, opts ...grpc.CallOption) (*GetAllItemsResponse, error) {
+	out := new(GetAllItemsResponse)
 	err := c.cc.Invoke(ctx, InventoryService_GetAllItems_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (c *inventoryServiceClient) DeleteItem(ctx context.Context, in *DeleteItemR
 type InventoryServiceServer interface {
 	AddItem(context.Context, *AddItemRequest) (*AddItemResponse, error)
 	GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error)
-	GetAllItems(context.Context, *GetAllItemsRequest) (*GetItemResponse, error)
+	GetAllItems(context.Context, *GetAllItemsRequest) (*GetAllItemsResponse, error)
 	AddQuantity(context.Context, *AddQuantityRequest) (*AddQuantityResponse, error)
 	LowerQuantity(context.Context, *LowerQuantityRequest) (*LowerQuantityResponse, error)
 	DeleteItem(context.Context, *DeleteItemRequest) (*DeleteItemResponse, error)
@@ -124,7 +124,7 @@ func (UnimplementedInventoryServiceServer) AddItem(context.Context, *AddItemRequ
 func (UnimplementedInventoryServiceServer) GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetItem not implemented")
 }
-func (UnimplementedInventoryServiceServer) GetAllItems(context.Context, *GetAllItemsRequest) (*GetItemResponse, error) {
+func (UnimplementedInventoryServiceServer) GetAllItems(context.Context, *GetAllItemsRequest) (*GetAllItemsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllItems not implemented")
 }
 func (UnimplementedInventoryServiceServer) AddQuantity(context.Context, *AddQuantityRequest) (*AddQuantityResponse, error) {

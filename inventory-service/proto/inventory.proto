@@ -73,7 +73,7 @@ message DeleteItemResponse {
 service InventoryService {
     rpc AddItem(AddItemRequest) returns (AddItemResponse) {}
     rpc GetItem(GetItemRequest) returns (GetItemResponse) {}
-    rpc GetAllItems(GetAllItemsRequest) returns (GetItemResponse) {}
+    rpc GetAllItems(GetAllItemsRequest) returns (GetAllItemsResponse) {}
     rpc AddQuantity(AddQuantityRequest) returns (AddQuantityResponse) {}
     rpc LowerQuantity(LowerQuantityRequest) returns (LowerQuantityResponse) {}
     rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse) {}
