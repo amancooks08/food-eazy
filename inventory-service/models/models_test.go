@@ -211,3 +211,39 @@ func (suite *InventoryModelsTestSuite) TestModels_UpdateItemQuantity() {
 		assert.Error(t, err)
 	})
 }
+
+
+func (suite *InventoryModelsTestSuite) TestModels_DeleteItem() {
+	t := suite.T()
+
+	t.Run("Delete item successfully", func(t *testing.T) {
+		//Arrange
+		testItem := &Item{
+			Name:        "testitem7",
+			Description: "testitem7.desc",
+			Price:       100,
+			Quantity:    10,
+		}
+
+		item, err := CreateItem(testItem)
+		assert.NoError(t, err)
+		assert.NotNil(t, item)
+
+		//Act
+		err = DeleteItem(item.ID)
+		assert.NoError(t, err)
+
+		//Assert
+		got, err := GetItem(item.ID)
+		assert.Error(t, err)
+		assert.Nil(t, got)
+	})
+
+	t.Run("Delete item with invalid id", func(t *testing.T) {
+		//Arrange and Act
+		err := DeleteItem(0)
+
+		//Assert
+		assert.Error(t, err)
+	})
+}

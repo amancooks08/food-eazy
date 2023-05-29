@@ -290,3 +290,37 @@ func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
 	})
 }
 
+
+func (suite *AuthServiceTestSuite) TestService_DeleteItem() {
+	t := suite.T()
+
+	t.Run("Delete item successfully", func(t *testing.T) {
+		item := &models.Item{
+			Name:        "testitem8",
+			Description: "testitem1.desc",
+			Price:       100,
+			Quantity:    100,
+		}
+
+		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem)
+
+		err = DeleteItem(newItem.ID)
+		assert.NoError(t, err)
+
+		item, err = GetItem(newItem.ID)
+		assert.Error(t, err)
+		assert.Nil(t, item)
+	})
+
+	t.Run("expect error with invalid id", func(t *testing.T) {
+		err := DeleteItem(0)
+		assert.Error(t, err)
+	})
+
+	t.Run("expect error with non-exist id", func(t *testing.T) {
+		err := DeleteItem(999)
+		assert.Error(t, err)
+	})
+}

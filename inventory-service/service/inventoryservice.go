@@ -61,3 +61,11 @@ func LowerQuantity(id uint, quantity uint) (*models.Item, error) {
 	models.UpdateItemQuantity(item.ID, item.Quantity)
 	return item , nil
 }
+
+func DeleteItem(id uint) error {
+	err := models.DeleteItem(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

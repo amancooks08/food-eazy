@@ -71,3 +71,15 @@ func UpdateItemQuantity(id uint, quantity uint) error {
 	}
 	return nil
 }
+
+func DeleteItem(id uint) error {
+	item, err := GetItem(id)
+	if err != nil {
+		return err
+	}
+	err = db.Delete(item).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
