@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+option go_package = "./inventorypb";
+
+message AddItemRequest {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 quantity = 4;
+    float price = 5;
+}
+
+message AddItemResponse {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 quantity = 4;
+    float price = 5;
+}
+
+message GetItemRequest {
+    int32 id = 1;
+}
+
+message GetItemResponse {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 quantity = 4;
+    float price = 5;
+}
+
+message GetAllItemsRequest {
+    repeated GetItemRequest items = 1;
+}
+
+message UpdateItemRequest {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 quantity = 4;
+    float price = 5;
+}   
+
+message UpdateItemResponse {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 quantity = 4;
+    float price = 5;
+}
+
+message DeleteItemRequest {
+    int32 id = 1;
+}
+
+message DeleteItemResponse {
+    string message = 1;
+}
+
+service InventoryService {
+    rpc AddItem(AddItemRequest) returns (AddItemResponse) {}
+    rpc GetItem(GetItemRequest) returns (GetItemResponse) {}
+    rpc GetAllItems(GetAllItemsRequest) returns (GetItemResponse) {}
+    rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse) {}
+    rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse) {}
+}
+
