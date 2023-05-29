@@ -31,23 +31,30 @@ message GetItemResponse {
 }
 
 message GetAllItemsRequest {
-    repeated GetItemRequest items = 1;
 }
 
-message UpdateItemRequest {
-    int32 id = 1;
-    string name = 2;
-    string description = 3;
-    int32 quantity = 4;
-    float price = 5;
-}   
+message GetAllItemsResponse {
+    repeated GetItemResponse items = 1;
+}
 
-message UpdateItemResponse {
+message AddQuantityRequest{
     int32 id = 1;
-    string name = 2;
-    string description = 3;
-    int32 quantity = 4;
-    float price = 5;
+    int32 quantity = 2;
+}
+
+message AddQuantityResponse{
+    int32 id = 1;
+    int32 quantity = 2;
+}
+
+message LowerQuantityRequest{
+    int32 id = 1;
+    int32 quantity = 2;
+}
+
+message LowerQuantityResponse{
+    int32 id = 1;
+    int32 quantity = 2;
 }
 
 message DeleteItemRequest {
@@ -62,7 +69,8 @@ service InventoryService {
     rpc AddItem(AddItemRequest) returns (AddItemResponse) {}
     rpc GetItem(GetItemRequest) returns (GetItemResponse) {}
     rpc GetAllItems(GetAllItemsRequest) returns (GetItemResponse) {}
-    rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse) {}
+    rpc AddQuantity(AddQuantityRequest) returns (AddQuantityResponse) {}
+    rpc LowerQuantity(LowerQuantityRequest) returns (LowerQuantityResponse) {}
     rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse) {}
 }
 

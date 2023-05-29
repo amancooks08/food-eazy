@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	InventoryService_AddItem_FullMethodName     = "/InventoryService/AddItem"
-	InventoryService_GetItem_FullMethodName     = "/InventoryService/GetItem"
-	InventoryService_GetAllItems_FullMethodName = "/InventoryService/GetAllItems"
-	InventoryService_UpdateItem_FullMethodName  = "/InventoryService/UpdateItem"
-	InventoryService_DeleteItem_FullMethodName  = "/InventoryService/DeleteItem"
+	InventoryService_AddItem_FullMethodName       = "/InventoryService/AddItem"
+	InventoryService_GetItem_FullMethodName       = "/InventoryService/GetItem"
+	InventoryService_GetAllItems_FullMethodName   = "/InventoryService/GetAllItems"
+	InventoryService_AddQuantity_FullMethodName   = "/InventoryService/AddQuantity"
+	InventoryService_LowerQuantity_FullMethodName = "/InventoryService/LowerQuantity"
+	InventoryService_DeleteItem_FullMethodName    = "/InventoryService/DeleteItem"
 )
 
 // InventoryServiceClient is the client API for InventoryService service.
@@ -33,7 +34,8 @@ type InventoryServiceClient interface {
 	AddItem(ctx context.Context, in *AddItemRequest, opts ...grpc.CallOption) (*AddItemResponse, error)
 	GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
 	GetAllItems(ctx context.Context, in *GetAllItemsRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
-	UpdateItem(ctx context.Context, in *UpdateItemRequest, opts ...grpc.CallOption) (*UpdateItemResponse, error)
+	AddQuantity(ctx context.Context, in *AddQuantityRequest, opts ...grpc.CallOption) (*AddQuantityResponse, error)
+	LowerQuantity(ctx context.Context, in *LowerQuantityRequest, opts ...grpc.CallOption) (*LowerQuantityResponse, error)
 	DeleteItem(ctx context.Context, in *DeleteItemRequest, opts ...grpc.CallOption) (*DeleteItemResponse, error)
 }
 
@@ -72,9 +74,18 @@ func (c *inventoryServiceClient) GetAllItems(ctx context.Context, in *GetAllItem
 	return out, nil
 }
 
-func (c *inventoryServiceClient) UpdateItem(ctx context.Context, in *UpdateItemRequest, opts ...grpc.CallOption) (*UpdateItemResponse, error) {
-	out := new(UpdateItemResponse)
-	err := c.cc.Invoke(ctx, InventoryService_UpdateItem_FullMethodName, in, out, opts...)
+func (c *inventoryServiceClient) AddQuantity(ctx context.Context, in *AddQuantityRequest, opts ...grpc.CallOption) (*AddQuantityResponse, error) {
+	out := new(AddQuantityResponse)
+	err := c.cc.Invoke(ctx, InventoryService_AddQuantity_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inventoryServiceClient) LowerQuantity(ctx context.Context, in *LowerQuantityRequest, opts ...grpc.CallOption) (*LowerQuantityResponse, error) {
+	out := new(LowerQuantityResponse)
+	err := c.cc.Invoke(ctx, InventoryService_LowerQuantity_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +108,8 @@ type InventoryServiceServer interface {
 	AddItem(context.Context, *AddItemRequest) (*AddItemResponse, error)
 	GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error)
 	GetAllItems(context.Context, *GetAllItemsRequest) (*GetItemResponse, error)
-	UpdateItem(context.Context, *UpdateItemRequest) (*UpdateItemResponse, error)
+	AddQuantity(context.Context, *AddQuantityRequest) (*AddQuantityResponse, error)
+	LowerQuantity(context.Context, *LowerQuantityRequest) (*LowerQuantityResponse, error)
 	DeleteItem(context.Context, *DeleteItemRequest) (*DeleteItemResponse, error)
 	mustEmbedUnimplementedInventoryServiceServer()
 }
@@ -115,8 +127,11 @@ func (UnimplementedInventoryServiceServer) GetItem(context.Context, *GetItemRequ
 func (UnimplementedInventoryServiceServer) GetAllItems(context.Context, *GetAllItemsRequest) (*GetItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllItems not implemented")
 }
-func (UnimplementedInventoryServiceServer) UpdateItem(context.Context, *UpdateItemRequest) (*UpdateItemResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateItem not implemented")
+func (UnimplementedInventoryServiceServer) AddQuantity(context.Context, *AddQuantityRequest) (*AddQuantityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddQuantity not implemented")
+}
+func (UnimplementedInventoryServiceServer) LowerQuantity(context.Context, *LowerQuantityRequest) (*LowerQuantityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LowerQuantity not implemented")
 }
 func (UnimplementedInventoryServiceServer) DeleteItem(context.Context, *DeleteItemRequest) (*DeleteItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteItem not implemented")
@@ -188,20 +203,38 @@ func _InventoryService_GetAllItems_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InventoryService_UpdateItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateItemRequest)
+func _InventoryService_AddQuantity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddQuantityRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(InventoryServiceServer).UpdateItem(ctx, in)
+		return srv.(InventoryServiceServer).AddQuantity(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: InventoryService_UpdateItem_FullMethodName,
+		FullMethod: InventoryService_AddQuantity_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InventoryServiceServer).UpdateItem(ctx, req.(*UpdateItemRequest))
+		return srv.(InventoryServiceServer).AddQuantity(ctx, req.(*AddQuantityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InventoryService_LowerQuantity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LowerQuantityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InventoryServiceServer).LowerQuantity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InventoryService_LowerQuantity_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InventoryServiceServer).LowerQuantity(ctx, req.(*LowerQuantityRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -244,8 +277,12 @@ var InventoryService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InventoryService_GetAllItems_Handler,
 		},
 		{
-			MethodName: "UpdateItem",
-			Handler:    _InventoryService_UpdateItem_Handler,
+			MethodName: "AddQuantity",
+			Handler:    _InventoryService_AddQuantity_Handler,
+		},
+		{
+			MethodName: "LowerQuantity",
+			Handler:    _InventoryService_LowerQuantity_Handler,
 		},
 		{
 			MethodName: "DeleteItem",
