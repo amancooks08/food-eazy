@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+option go_package = "./inventory";
+
+message AddItemRequest {
+    string name = 1;
+    string description = 2;
+    int32 quantity = 3;
+    float price = 4;
+}
+
+message AddItemResponse {
+    int32 statusCode = 1;
+    int32 id = 2;
+    string name = 3;
+    string description = 4;
+    uint32 quantity = 5;
+    float price = 6;
+}
+
+message GetItemRequest {
+    int32 id = 1;
+}
+
+message GetItemResponse {
+    int32 statusCode = 1;
+    int32 id = 2;
+    string name = 3;
+    string description = 4;
+    uint32 quantity = 5;
+    float price = 6;
+}
+
+message GetAllItemsRequest {
+}
+
+message GetAllItemsResponse {
+    int32 statusCode = 1;
+    repeated GetItemResponse items = 2;
+}
+
+message AddQuantityRequest{
+    int32 id = 1;
+    uint32 quantity = 2;
+}
+
+message AddQuantityResponse{
+    int32 statusCode = 1;
+    int32 id = 2;
+    uint32 quantity = 3;
+}
+
+message LowerQuantityRequest{
+    int32 id = 1;
+    uint32 quantity = 2;
+}
+
+message LowerQuantityResponse{
+    int32 statusCode = 1;
+    int32 id = 2;
+    uint32 quantity = 3;
+}
+
+message DeleteItemRequest {
+    int32 id = 1;
+}
+
+message DeleteItemResponse {
+    int32 statusCode = 1;
+    string message = 2;
+}
+
+service InventoryService {
+    rpc AddItem(AddItemRequest) returns (AddItemResponse) {}
+    rpc GetItem(GetItemRequest) returns (GetItemResponse) {}
+    rpc GetAllItems(GetAllItemsRequest) returns (GetAllItemsResponse) {}
+    rpc AddQuantity(AddQuantityRequest) returns (AddQuantityResponse) {}
+    rpc LowerQuantity(LowerQuantityRequest) returns (LowerQuantityResponse) {}
+    rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse) {}
+}
