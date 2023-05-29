@@ -6,7 +6,7 @@ import (
 )
 
 func AddItem(name string, description string, price float64, quantity uint) (*models.Item, error) {
-	if name == "" || description == "" || price == 0 || quantity == 0 {
+	if name == "" || description == "" || price <= 0 || quantity == 0 {
 		return nil, errors.ErrEmptyField
 	}
 	newItem := &models.Item{
@@ -37,4 +37,27 @@ func GetAllItems() ([]*models.Item, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+func AddQuantity(id uint, quantity uint) (*models.Item, error) {
+	item, err := models.GetItem(uint(id))
+	if err != nil {
+		return nil, err
+	}
+	item.Quantity += quantity
+	models.UpdateItemQuantity(item.ID, item.Quantity)
+	return item , nil
+}
+
+func LowerQuantity(id uint, quantity uint) (*models.Item, error) {
+	item, err := models.GetItem(uint(id))
+	if err != nil {
+		return nil, err
+	}
+	if item.Quantity < quantity {
+		return nil, errors.ErrInsufficientQuantity
+	}
+	item.Quantity -= quantity
+	models.UpdateItemQuantity(item.ID, item.Quantity)
+	return item , nil
 }

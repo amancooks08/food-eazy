@@ -89,6 +89,16 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 			wantErr: true,
 		},
 		{
+			name: "Add item with negative price",
+			args: args{
+				name:        "testitem1",
+				description: "testitem1.desc",
+				price:       -100,
+				quantity:    100,
+			},
+			wantErr: true,
+		},
+		{
 			name: "Add item with zero quantity",
 			args: args{
 				name:        "testitem1",
@@ -191,6 +201,92 @@ func (suite *AuthServiceTestSuite) TestService_GetAllITems() {
 		items, err := GetAllItems()
 		assert.NoError(t, err)
 		assert.NotNil(t, items)
-		assert.Equal(t, 2, len(items))
+		assert.Equal(t, 4, len(items))
 	})
 }
+
+func (suite *AuthServiceTestSuite) TestService_AddQuantity() {
+	t := suite.T()
+
+	t.Run("Add quantity successfully", func(t *testing.T) {
+		item := &models.Item{
+			Name:        "testitem5",
+			Description: "testitem1.desc",
+			Price:       100,
+			Quantity:    100,
+		}
+
+		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem)
+
+		newItem, err = AddQuantity(newItem.ID, 100)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem)
+		assert.Equal(t, 200, int(newItem.Quantity))
+	})
+
+	t.Run("expect error with invalid id", func(t *testing.T) {
+		item, err := AddQuantity(0, 100)
+		assert.Error(t, err)
+		assert.Nil(t, item)
+	})
+
+	t.Run("expect error with non-exist id", func(t *testing.T) {
+		item, err := AddQuantity(999, 100)
+		assert.Error(t, err)
+		assert.Nil(t, item)
+	})
+}
+
+func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
+	t := suite.T()
+
+	t.Run("Lower quantity successfully", func(t *testing.T) {
+		item := &models.Item{
+			Name:        "testitem6",
+			Description: "testitem1.desc",
+			Price:       100,
+			Quantity:    100,
+		}
+
+		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem)
+
+		newItem, err = LowerQuantity(newItem.ID, 100)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem)
+		assert.Equal(t, 0, int(newItem.Quantity))
+	})
+
+	t.Run("expect error with invalid id", func(t *testing.T) {
+		item, err := LowerQuantity(0, 100)
+		assert.Error(t, err)
+		assert.Nil(t, item)
+	})
+
+	t.Run("expect error with non-exist id", func(t *testing.T) {
+		item, err := LowerQuantity(999, 100)
+		assert.Error(t, err)
+		assert.Nil(t, item)
+	})
+
+	t.Run("expect error when quantity is less than available inventory", func(t *testing.T) {
+		item := &models.Item{
+			Name:        "testitem7",
+			Description: "testitem1.desc",
+			Price:       100,
+			Quantity:    100,
+		}
+
+		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem)
+
+		newItem, err = LowerQuantity(newItem.ID, 200)
+		assert.Error(t, err)
+		assert.Nil(t, newItem)
+	})
+}
+
