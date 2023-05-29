@@ -9,15 +9,32 @@ func AddItem(name string, description string, price float64, quantity uint) (*mo
 	if name == "" || description == "" || price == 0 || quantity == 0 {
 		return nil, errors.ErrEmptyField
 	}
-	newItem := models.Item{
+	newItem := &models.Item{
 		Name:        name,
 		Description: description,
 		Price:       price,
 		Quantity:    quantity,
 	}
-	err := models.CreateItem(newItem)
+	newItem, err := models.CreateItem(newItem)
 	if err != nil {
 		return nil, err
 	}
-	return &newItem, nil
+	return newItem, nil
+}
+
+func GetItem(id uint) (*models.Item, error) {
+	item, err := models.GetItem(id)
+	if err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
+
+func GetAllItems() ([]*models.Item, error) {
+	items, err := models.GetAllItems()
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
 }

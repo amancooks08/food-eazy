@@ -35,7 +35,7 @@ func TestServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(AuthServiceTestSuite))
 }
 
-func (suite *AuthServiceTestSuite) TestAddItem() {
+func (suite *AuthServiceTestSuite) TestService_AddItem() {
 	t := suite.T()
 	type args struct {
 		name        string
@@ -98,6 +98,16 @@ func (suite *AuthServiceTestSuite) TestAddItem() {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Add item that already exists",
+			args: args{
+				name:        "testitem1",
+				description: "testitem1.desc",
+				price:       100,
+				quantity:    100,
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -116,4 +126,71 @@ func (suite *AuthServiceTestSuite) TestAddItem() {
 			}
 		})
 	}
+}
+
+func (suite *AuthServiceTestSuite) TestService_GetItem() {
+	t := suite.T()
+
+	t.Run("Get item successfully", func(t *testing.T) {
+		item := &models.Item{
+			Name:        "testitem2",
+			Description: "testitem1.desc",
+			Price:       100,
+			Quantity:    100,
+		}
+
+		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem)
+
+		item, err = GetItem(newItem.ID)
+		assert.NoError(t, err)
+		assert.NotNil(t, item)
+	})
+
+	t.Run("expect error with invalid id", func(t *testing.T) {
+		item, err := GetItem(0)
+		assert.Error(t, err)
+		assert.Nil(t, item)
+	})
+
+	t.Run("expect error with non-exist id", func(t *testing.T) {
+		item, err := GetItem(999)
+		assert.Error(t, err)
+		assert.Nil(t, item)
+	})
+}
+
+
+func (suite *AuthServiceTestSuite) TestService_GetAllITems() {
+	t := suite.T()
+
+	t.Run("Get all items successfully", func(t *testing.T) {
+		item := &models.Item{
+			Name:        "testitem3",
+			Description: "testitem1.desc",
+			Price:       100,
+			Quantity:    100,
+		}
+
+		newItem1, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem1)
+
+		item = &models.Item{
+			Name:        "testitem4",
+			Description: "testitem1.desc",
+			Price:       100,
+			Quantity:    100,
+		}
+
+		newItem2, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.NoError(t, err)
+		assert.NotNil(t, newItem2)
+
+		items, err := GetAllItems()
+		assert.NoError(t, err)
+		assert.NotNil(t, items)
+		assert.Equal(t, 2, len(items))
+	})
 }
