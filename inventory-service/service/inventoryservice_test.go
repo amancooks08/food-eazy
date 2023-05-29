@@ -1,6 +1,7 @@
 package service
 
 import (
+	"net/http"
 	"testing"
 
 	"inventory-service/models"
@@ -40,13 +41,14 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 	type args struct {
 		name        string
 		description string
-		price       float64
+		price       float32
 		quantity    uint
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
+		wantStatus uint32
 	}{
 		{
 			name: "Add item successfully",
@@ -57,6 +59,7 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 				quantity:    100,
 			},
 			wantErr: false,
+			wantStatus: http.StatusCreated,
 		},
 		{
 			name: "Add item with empty name",
@@ -67,6 +70,7 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 				quantity:    100,
 			},
 			wantErr: true,
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Add item with empty description",
@@ -77,6 +81,7 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 				quantity:    100,
 			},
 			wantErr: true,
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Add item with zero price",
@@ -87,6 +92,7 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 				quantity:    100,
 			},
 			wantErr: true,
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Add item with negative price",
@@ -97,6 +103,7 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 				quantity:    100,
 			},
 			wantErr: true,
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Add item with zero quantity",
@@ -107,6 +114,7 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 				quantity:    0,
 			},
 			wantErr: true,
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "Add item that already exists",
@@ -117,18 +125,21 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 				quantity:    100,
 			},
 			wantErr: true,
+			wantStatus: http.StatusUnprocessableEntity,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			item, err := AddItem(tt.args.name, tt.args.description, tt.args.price, tt.args.quantity)
+			status, item, err := AddItem(tt.args.name, tt.args.description, tt.args.price, tt.args.quantity)
 			if tt.wantErr {
+				assert.Equal(t, tt.wantStatus, status)
 				assert.Error(t, err)
 				assert.Nil(t, item)
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, item)
+				assert.Equal(t, tt.args.name, item.Name)
 				assert.Equal(t, tt.args.name, item.Name)
 				assert.Equal(t, tt.args.description, item.Description)
 				assert.Equal(t, tt.args.price, item.Price)
@@ -149,23 +160,27 @@ func (suite *AuthServiceTestSuite) TestService_GetItem() {
 			Quantity:    100,
 		}
 
-		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
-		item, err = GetItem(newItem.ID)
+		status, item, err = GetItem(newItem.ID)
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, item)
 	})
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
-		item, err := GetItem(0)
+		status, item, err := GetItem(0)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
-		item, err := GetItem(999)
+		status, item, err := GetItem(99999)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
@@ -183,7 +198,8 @@ func (suite *AuthServiceTestSuite) TestService_GetAllITems() {
 			Quantity:    100,
 		}
 
-		newItem1, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		status, newItem1, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem1)
 
@@ -194,11 +210,13 @@ func (suite *AuthServiceTestSuite) TestService_GetAllITems() {
 			Quantity:    100,
 		}
 
-		newItem2, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		status, newItem2, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem2)
 
-		items, err := GetAllItems()
+		status, items, err := GetAllItems()
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, items)
 		assert.Equal(t, 4, len(items))
@@ -216,24 +234,28 @@ func (suite *AuthServiceTestSuite) TestService_AddQuantity() {
 			Quantity:    100,
 		}
 
-		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
-		newItem, err = AddQuantity(newItem.ID, 100)
+		status, newItem, err = AddQuantity(newItem.ID, 100)
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 		assert.Equal(t, 200, int(newItem.Quantity))
 	})
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
-		item, err := AddQuantity(0, 100)
+		status, item, err := AddQuantity(0, 100)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
-		item, err := AddQuantity(999, 100)
+		status, item, err := AddQuantity(999, 100)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
@@ -250,24 +272,28 @@ func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
 			Quantity:    100,
 		}
 
-		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
-		newItem, err = LowerQuantity(newItem.ID, 100)
+		status, newItem, err = LowerQuantity(newItem.ID, 100)
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 		assert.Equal(t, 0, int(newItem.Quantity))
 	})
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
-		item, err := LowerQuantity(0, 100)
+		status, item, err := LowerQuantity(0, 100)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
-		item, err := LowerQuantity(999, 100)
+		status, item, err := LowerQuantity(999, 100)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
@@ -280,11 +306,13 @@ func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
 			Quantity:    100,
 		}
 
-		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
-		newItem, err = LowerQuantity(newItem.ID, 200)
+		status, newItem, err = LowerQuantity(newItem.ID, 200)
+		assert.Equal(t, http.StatusConflict, status)
 		assert.Error(t, err)
 		assert.Nil(t, newItem)
 	})
@@ -302,25 +330,30 @@ func (suite *AuthServiceTestSuite) TestService_DeleteItem() {
 			Quantity:    100,
 		}
 
-		newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
-		err = DeleteItem(newItem.ID)
+		status, err = DeleteItem(newItem.ID)
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 
-		item, err = GetItem(newItem.ID)
+		status, item, err = GetItem(newItem.ID)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
-		err := DeleteItem(0)
+		status, err := DeleteItem(0)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
-		err := DeleteItem(999)
+		status, err := DeleteItem(999)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 	})
 }

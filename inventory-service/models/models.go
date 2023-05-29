@@ -2,6 +2,7 @@ package models
 
 import (
 	"inventory-service/errors"
+	"net/http"
 
 	logger "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -14,7 +15,7 @@ type Item struct {
 	ID          uint    `gorm:"primaryKey; column:id; autoIncrement; not null"`
 	Name        string  `gorm:"column:name; unique; not null"`
 	Description string  `gorm:"column:description; not null"`
-	Price       float64 `gorm:"column:price; not null"`
+	Price       float32 `gorm:"column:price; not null"`
 	Quantity    uint    `gorm:"column:quantity; not null"`
 }
 
@@ -23,63 +24,63 @@ func InitInventoryModels(database *gorm.DB) {
 	db.AutoMigrate(&Item{})
 }
 
-func CreateItem(item *Item) (*Item, error) {
+func CreateItem(item *Item) (uint32, *Item, error) {
 	if item == nil {
 		logger.WithField("error", errors.ErrInvalidItem.Error()).Error(errors.ErrInvalidItem.Error())
-		return nil, errors.ErrInvalidItem
+		return http.StatusBadRequest, nil, errors.ErrInvalidItem
 	}
 	err := db.Create(item).Error
 	if err != nil && err.Error() == "UNIQUE constraint failed: items.name" {
-		return nil, errors.ErrItemExists
+		return http.StatusUnprocessableEntity, nil, errors.ErrItemExists
 	} else if err != nil {
 		logger.WithField("error", err.Error()).Error(err.Error())
-		return nil, err
+		return http.StatusBadRequest, nil, err
 	}
-	return item, nil
+	return http.StatusCreated, item, nil
 }
 
-func GetItem(id uint) (*Item, error) {
+func GetItem(id uint) (uint32, *Item, error) {
 	item := &Item{}
 	err := db.Where("id = ?", id).First(item).Error
 	if err != nil && err.Error() == "record not found" {
-		return nil, errors.ErrItemNotFound
+		return http.StatusNotFound, nil, errors.ErrItemNotFound
 	} else if err != nil {
 		logger.WithField("error", err.Error()).Error(err.Error())
-		return nil, err
+		return http.StatusInternalServerError, nil, err
 	}
-	return item, nil
+	return http.StatusOK, item, nil
 }
 
-func GetAllItems() ([]*Item, error) {
+func GetAllItems() (uint32, []*Item, error) {
 	items := []*Item{}
 	err := db.Find(&items).Error
 	if err != nil {
-		return nil, err
+		return http.StatusInternalServerError, nil, err
 	}
-	return items, nil
+	return http.StatusOK, items, nil
 }
 
-func UpdateItemQuantity(id uint, quantity uint) error {
-	item, err := GetItem(id)
+func UpdateItemQuantity(id uint, quantity uint) (uint32, error) {
+	status, item, err := GetItem(id)
 	if err != nil {
-		return err
+		return status, err
 	}
 	item.Quantity = quantity
 	err = db.Save(item).Error
 	if err != nil {
-		return err
+		return http.StatusInternalServerError, err
 	}
-	return nil
+	return http.StatusOK, nil
 }
 
-func DeleteItem(id uint) error {
-	item, err := GetItem(id)
+func DeleteItem(id uint) (uint32, error) {
+	status, item, err := GetItem(id)
 	if err != nil {
-		return err
+		return status, err
 	}
 	err = db.Delete(item).Error
 	if err != nil {
-		return err
+		return http.StatusInternalServerError, err
 	}
-	return nil
+	return http.StatusOK, nil
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,10 +53,11 @@ func (suite *InventoryModelsTestSuite) TestModels_CreateItem() {
 		}
 
 		//Act
-		item, err := CreateItem(testItem)
+		status, item, err := CreateItem(testItem)
 
 		//Assert
 		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NotNil(t, item)
 		assert.Equal(t, testItem.Name, item.Name)
 		assert.Equal(t, testItem.Description, item.Description)
@@ -65,10 +67,11 @@ func (suite *InventoryModelsTestSuite) TestModels_CreateItem() {
 
 	t.Run("Add item with nil value", func(t *testing.T) {
 		//Arrange and Act
-		item, err := CreateItem(nil)
+		status, item, err := CreateItem(nil)
 
 		//Assert
 		assert.Error(t, err)
+		assert.Equal(t, http.StatusBadRequest, status)
 		assert.Nil(t, item)
 	})
 
@@ -81,8 +84,9 @@ func (suite *InventoryModelsTestSuite) TestModels_CreateItem() {
 			Quantity:    100,
 		}
 
-		item, err := CreateItem(testItem1)
+		status, item, err := CreateItem(testItem1)
 		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NotNil(t, item)
 
 		testItem2 := &Item{
@@ -93,10 +97,11 @@ func (suite *InventoryModelsTestSuite) TestModels_CreateItem() {
 		}
 
 		//Act
-		item, err = CreateItem(testItem2)
+		status, item, err = CreateItem(testItem2)
 
 		//Assert
 		assert.Error(t, err)
+		assert.Equal(t, http.StatusUnprocessableEntity, status)
 		assert.Nil(t, item)
 	})
 }
@@ -113,14 +118,16 @@ func (suite *InventoryModelsTestSuite) TestModels_GetItem() {
 			Quantity:    10,
 		}
 
-		item, err := CreateItem(testItem)
+		status, item, err := CreateItem(testItem)
 		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NotNil(t, item)
 
 		//Act
-		got, err := GetItem(item.ID)
+		status, got, err := GetItem(item.ID)
 
 		//Assert
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, got)
 		assert.Equal(t, testItem.Name, item.Name)
@@ -131,9 +138,10 @@ func (suite *InventoryModelsTestSuite) TestModels_GetItem() {
 
 	t.Run("Get item with invalid id", func(t *testing.T) {
 		//Arrange and Act
-		got, err := GetItem(0)
+		status, got, err := GetItem(0)
 
 		//Assert
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, got)
 	})
@@ -151,8 +159,9 @@ func (suite *InventoryModelsTestSuite) TestModels_GetAllItems() {
 			Quantity:    10,
 		}
 
-		item1, err := CreateItem(testItem1)
+		status, item1, err := CreateItem(testItem1)
 		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NotNil(t, item1)
 
 		testItem2 := &Item{
@@ -162,14 +171,16 @@ func (suite *InventoryModelsTestSuite) TestModels_GetAllItems() {
 			Quantity:    10,
 		}
 
-		item2, err := CreateItem(testItem2)
+		status, item2, err := CreateItem(testItem2)
 		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NotNil(t, item2)
 
 		//Act
-		got, err := GetAllItems()
+		status, got, err := GetAllItems()
 
 		//Assert
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, got)
 		assert.Equal(t, 4, len(got))
@@ -188,16 +199,19 @@ func (suite *InventoryModelsTestSuite) TestModels_UpdateItemQuantity() {
 			Quantity:    10,
 		}
 
-		item, err := CreateItem(testItem)
+		status, item, err := CreateItem(testItem)
 		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NotNil(t, item)
 
 		//Act
-		err = UpdateItemQuantity(item.ID, 20)
+		status, err = UpdateItemQuantity(item.ID, 20)
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 
 		//Assert
-		got, err := GetItem(item.ID)
+		status, got, err := GetItem(item.ID)
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 		assert.NotNil(t, got)
 		assert.Equal(t, uint(20), got.Quantity)
@@ -205,9 +219,10 @@ func (suite *InventoryModelsTestSuite) TestModels_UpdateItemQuantity() {
 
 	t.Run("Update item quantity with invalid id", func(t *testing.T) {
 		// Arrange and Act
-		err := UpdateItemQuantity(0, 20)
+		status, err := UpdateItemQuantity(0, 20)
 
 		// Assert
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 	})
 }
@@ -225,25 +240,29 @@ func (suite *InventoryModelsTestSuite) TestModels_DeleteItem() {
 			Quantity:    10,
 		}
 
-		item, err := CreateItem(testItem)
+		status, item, err := CreateItem(testItem)
 		assert.NoError(t, err)
+		assert.Equal(t, http.StatusCreated, status)
 		assert.NotNil(t, item)
 
 		//Act
-		err = DeleteItem(item.ID)
+		status, err = DeleteItem(item.ID)
+		assert.Equal(t, http.StatusOK, status)
 		assert.NoError(t, err)
 
 		//Assert
-		got, err := GetItem(item.ID)
+		status, got, err := GetItem(item.ID)
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 		assert.Nil(t, got)
 	})
 
 	t.Run("Delete item with invalid id", func(t *testing.T) {
 		//Arrange and Act
-		err := DeleteItem(0)
+		status, err := DeleteItem(0)
 
 		//Assert
+		assert.Equal(t, http.StatusNotFound, status)
 		assert.Error(t, err)
 	})
 }
