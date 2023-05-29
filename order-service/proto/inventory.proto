@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option go_package = "./inventorypb";
+
+message GetItemRequest {
+    int32 id = 1;
+}
+
+message GetItemResponse {
+    int32 statusCode = 1;
+    int32 id = 2;
+    string name = 3;
+    string description = 4;
+    uint32 quantity = 5;
+    float price = 6;
+}
+
+message LowerQuantityRequest{
+    int32 id = 1;
+    uint32 quantity = 2;
+}
+
+message LowerQuantityResponse{
+    int32 statusCode = 1;
+    int32 id = 2;
+    uint32 quantity = 3;
+}
+
+service InventoryService {
+    rpc GetItem(GetItemRequest) returns (GetItemResponse) {}
+    rpc LowerQuantity(LowerQuantityRequest) returns (LowerQuantityResponse) {}
+}
+
