@@ -2,15 +2,18 @@ package dependencies
 
 import (
 	"api-gateway/clients"
-	proto "api-gateway/proto/auth"
+	"api-gateway/proto/auth"
+	"api-gateway/proto/inventory"
 )
 
 type Dependencies struct {
-	AuthService proto.AuthServiceClient
+	AuthService auth.AuthServiceClient
+	InventoryService inventory.InventoryServiceClient
 }
 
 func InitDependencies() *Dependencies {
 	return &Dependencies{
 		AuthService: clients.AuthServiceClient,
+		InventoryService: clients.InventoryServiceClient,
 	}
 }
