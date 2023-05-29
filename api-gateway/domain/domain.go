@@ -20,3 +20,13 @@ var RoleMap = map[string]proto.Role{
 	"USER":  proto.Role_USER,
 	"ADMIN": proto.Role_ADMIN,
 }
+
+type LoginUserRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginUserResponse struct {
+	Message string `json:"message"`
+	Token string `json:"token"`
+}

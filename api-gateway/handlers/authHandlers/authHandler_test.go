@@ -133,3 +133,51 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 		assert.Equal(t, string(exp), res.Body.String())
 	})
 }
+
+
+func (suite *AuthHandlerTestSuite) TestLoginUser() {
+	t := suite.T()
+	t.Run("expect to return 200 when user logged in successfully", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.LoginUserRequest{
+			Email:    "test2@mailing.com",
+			Password: "test@1234",
+		}
+
+		expectedRequest := proto.LoginUserRequest{
+			Email:    requestBody.Email,
+			Password: requestBody.Password,
+		}
+
+		expectedResponse := proto.LoginUserResponse{
+			StatusCode: http.StatusOK,
+			Message: "User logged in successfully",
+		}
+
+		resp := domain.LoginUserResponse{
+			Message: expectedResponse.Message,
+			Token: "",
+		}
+
+		exp, err := json.Marshal(resp)
+		if err != nil {
+			t.Errorf("error while marshalling expected response: %v", err)
+		}
+
+		jsonRequest := `{"email" : "test2@mailing.com", "password" : "test@1234"}`
+		req := httptest.NewRequest("POST", "/login", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+
+		suite.grpc.On("LoginUser", context.Background(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := &dependencies.Dependencies{
+			AuthService: suite.grpc,
+		}
+		// Assert
+		handler := LoginUser(deps.AuthService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, string(exp), res.Body.String())
+	})
+}

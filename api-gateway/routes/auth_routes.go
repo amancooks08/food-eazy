@@ -8,4 +8,5 @@ import (
 
 func InitAuthRoutes(router *mux.Router, authService proto.AuthServiceClient) {
 	router.HandleFunc("/register", authHandlers.RegisterUser(authService)).Methods("POST")
+	router.HandleFunc("/login", authHandlers.LoginUser(authService)).Methods("POST")
 }
