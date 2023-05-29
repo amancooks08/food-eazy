@@ -22,7 +22,6 @@ func TestGenerateToken(t *testing.T) {
 		assert.Equal(t, errors.ErrEmptyField.Error(), err.Error())
 		assert.Empty(t, token)
 	})
-
 	t.Run("Generate token with empty role", func(t *testing.T) {
 		email, role := "test1@gmail.com", ""
 		token, err := GenerateToken(email, role)
