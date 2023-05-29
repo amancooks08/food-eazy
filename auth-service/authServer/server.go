@@ -3,6 +3,7 @@ package authServer
 import (
 	"context"
 
+	"auth-service/errors"
 	proto "auth-service/proto/authpb"
 	"auth-service/service"
 )
@@ -29,7 +30,12 @@ func (s *GRPCServer) RegisterUser(ctx context.Context, req *proto.RegisterUserRe
 func (s *GRPCServer) LoginUser(ctx context.Context, req *proto.LoginUserRequest) (*proto.LoginUserResponse, error) {
 	token, err := service.LoginUser(req.Email, req.Password)
 	if err != nil {
-		return nil, err
+		if err.Error() == errors.ErrDuplicateEmail.Error() {
+			return &proto.LoginUserResponse{
+				StatusCode: 409,
+				Token: "",
+			}, err
+		}
 	}
 
 	return &proto.LoginUserResponse{
