@@ -132,6 +132,69 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 		assert.Equal(t, http.StatusBadRequest, res.Code)
 		assert.Equal(t, string(exp), res.Body.String())
 	})
+
+	t.Run("expect to return 409 when user already exists", func(t *testing.T) {
+		requestBody := domain.RegisterUserRequest{
+			Name:        "test1",
+			Email:       "testting@mailcom",
+			Password:   "test@1234",
+			PhoneNumber: "9876543987",
+			Role:        "USER",
+		}
+
+		expectedRequest := proto.RegisterUserRequest{
+			Name:        requestBody.Name,
+			Email:       requestBody.Email,
+			Password:    requestBody.Password,
+			PhoneNumber: requestBody.PhoneNumber,
+			Role:        domain.RoleMap[requestBody.Role],
+		}
+
+		expectedResponse := proto.RegisterUserResponse{
+			StatusCode: http.StatusBadRequest,
+			Message: "invalid request body",
+		}
+
+		resp := domain.Message{
+			Message: expectedResponse.Message,
+		}
+
+		exp, err := json.Marshal(resp)
+		if err != nil {
+			t.Errorf("error while marshalling expected response: %v", err)
+		}
+
+		jsonRequest := `{"name" : "test1", "email" : "testting@mailcom", "password" : "test@1234", "phone_number" : "9876543987" , "role":"USER"}`
+		req := httptest.NewRequest("POST", "/register", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+
+		suite.grpc.On("RegisterUser", context.Background(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := &dependencies.Dependencies{
+			AuthService: suite.grpc,
+		}
+		// Assert
+		handler := RegisterUser(deps.AuthService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusConflict, res.Code)
+		assert.Equal(t, string(exp), res.Body.String())
+	})
+
+	t.Run("expect to return 405 when method not allowed", func(t *testing.T) {
+		// Arrange
+		req := httptest.NewRequest("GET", "/register", nil)
+		res := httptest.NewRecorder()
+
+		// Act
+		deps := &dependencies.Dependencies{
+			AuthService: suite.grpc,
+		}
+		// Assert
+		handler := RegisterUser(deps.AuthService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusMethodNotAllowed, res.Code)
+	})
 }
 
 
@@ -179,5 +242,110 @@ func (suite *AuthHandlerTestSuite) TestLoginUser() {
 		handler.ServeHTTP(res, req)
 		assert.Equal(t, http.StatusOK, res.Code)
 		assert.Equal(t, string(exp), res.Body.String())
+	})
+
+	t.Run("expect to return 400 when request body is invalid", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.LoginUserRequest{
+			Email:    "test@com",
+			Password: "test@1234",
+		}
+
+		expectedRequest := proto.LoginUserRequest{
+			Email:    requestBody.Email,
+			Password: requestBody.Password,
+		}
+
+		expectedResponse := proto.LoginUserResponse{
+			StatusCode: http.StatusBadRequest,
+			Message: "invalid request body",
+		}
+
+		resp := domain.LoginUserResponse{
+			Message: expectedResponse.Message,
+			Token: "",
+		}
+
+		exp, err := json.Marshal(resp)
+		if err != nil {
+			t.Errorf("error while marshalling expected response: %v", err)
+		}
+
+		jsonRequest := `{"email" : "test@com", "password" : "test@1234"}`
+		req := httptest.NewRequest("POST", "/login", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+
+		suite.grpc.On("LoginUser", context.Background(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := &dependencies.Dependencies{
+			AuthService: suite.grpc,
+		}
+
+		// Assert
+		handler := LoginUser(deps.AuthService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, string(exp), res.Body.String())
+	})
+
+	t.Run("expect to return 401 when user not found", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.LoginUserRequest{
+			Email:    "test@com",
+			Password: "test@1234",
+		}
+
+		expectedRequest := proto.LoginUserRequest{
+			Email:    requestBody.Email,
+			Password: requestBody.Password,
+		}
+
+		expectedResponse := proto.LoginUserResponse{
+			StatusCode: http.StatusBadRequest,
+			Message: "invalid request body",
+		}
+
+		resp := domain.LoginUserResponse{
+			Message: expectedResponse.Message,
+			Token: "",
+		}
+
+		exp, err := json.Marshal(resp)
+		if err != nil {
+			t.Errorf("error while marshalling expected response: %v", err)
+		}
+
+		jsonRequest := `{"email" : "test@com", "password" : "test@1234"}`
+		req := httptest.NewRequest("POST", "/login", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+
+		suite.grpc.On("LoginUser", context.Background(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := &dependencies.Dependencies{
+			AuthService: suite.grpc,
+		}
+
+		// Assert
+		handler := LoginUser(deps.AuthService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusUnauthorized, res.Code)
+		assert.Equal(t, string(exp), res.Body.String())
+	})
+
+	t.Run("expect to return 405 when method not allowed", func(t *testing.T) {
+		// Arrange
+		req := httptest.NewRequest("GET", "/login", nil)
+		res := httptest.NewRecorder()
+
+		// Act
+		deps := &dependencies.Dependencies{
+			AuthService: suite.grpc,
+		}
+		// Assert
+		handler := LoginUser(deps.AuthService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusMethodNotAllowed, res.Code)
 	})
 }
