@@ -391,10 +391,24 @@ func (suite *InventoryHandlersTestSuite) TestInventoryHandler_AddItem() {
 		assert.Equal(t, http.StatusUnprocessableEntity, res.Code)
 		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
 	})
+
+	t.Run("expect to return 405 when method is not POST", func(t *testing.T) {
+		// Arrange
+		req := httptest.NewRequest("GET", "/admin/inventory/item/add", nil)
+		res := httptest.NewRecorder()
+
+		// Act
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusMethodNotAllowed, res.Code)
+	})
 }
 
-
-func (suite *InventoryHandlersTestSuite) TestInventoryHandler_GetItem(){
+func (suite *InventoryHandlersTestSuite) TestInventoryHandler_GetItem() {
 	t := suite.T()
 
 	t.Run("expect to return 200 when item is found", func(t *testing.T) {
@@ -529,5 +543,139 @@ func (suite *InventoryHandlersTestSuite) TestInventoryHandler_GetItem(){
 		handler.ServeHTTP(res, req)
 		assert.Equal(t, http.StatusBadRequest, res.Code)
 		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 405 when request method is not GET", func(t *testing.T) {
+		// Arrange
+		req := httptest.NewRequest("POST", "/admin/inventory/item/get", nil)
+		res := httptest.NewRecorder()
+
+		// Act
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := GetItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusMethodNotAllowed, res.Code)
+	})
+}
+
+func (suite *InventoryHandlersTestSuite) TestInventoryHandler_GetAllItems() {
+	t := suite.T()
+
+	t.Run("expect to return 200 when items are found", func(t *testing.T) {
+		// Arrange
+		expectedRequest := proto.GetAllItemsRequest{}
+
+		expectedResponse := proto.GetAllItemsResponse{
+			StatusCode: http.StatusOK,
+			Items: []*proto.GetItemResponse{
+				{
+					StatusCode:  http.StatusOK,
+					Id:          1,
+					Name:        "test1",
+					Description: "test1",
+					Price:       100,
+					Quantity:    10,
+				},
+				{
+					StatusCode:  http.StatusOK,
+					Id:          2,
+					Name:        "test2",
+					Description: "test2",
+					Price:       200,
+					Quantity:    20,
+				},
+			},
+		}
+
+		response := domain.GetAllItemsResponse{
+			Items: []domain.GetItemResponse{
+				{
+					ID:          1,
+					Name:        "test1",
+					Description: "test1",
+					Price:       100,
+					Quantity:    10,
+				},
+				{
+					ID:          2,
+					Name:        "test2",
+					Description: "test2",
+					Price:       200,
+					Quantity:    20,
+				},
+			},
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("GET", "/admin/inventory/items/get", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("GetAllItems", context.Background(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := GetAllItems(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 204 when items are not found", func(t *testing.T) {
+		// Arrange
+		expectedRequest := proto.GetAllItemsRequest{}
+
+		expectedResponse := proto.GetAllItemsResponse{
+			StatusCode: http.StatusNoContent,
+			Items:      []*proto.GetItemResponse{},
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: Items not found",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("GET", "/admin/inventory/items/get", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("GetAllItems", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("Items not found")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := GetAllItems(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusNoContent, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 405 when request method is not GET", func(t *testing.T) {
+		// Arrange
+		req := httptest.NewRequest("POST", "/admin/inventory/items/get", nil)
+		res := httptest.NewRecorder()
+
+		// Act
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := GetAllItems(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusMethodNotAllowed, res.Code)
 	})
 }

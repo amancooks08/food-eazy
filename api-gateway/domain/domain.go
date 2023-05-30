@@ -57,3 +57,7 @@ type GetItemResponse struct {
 	Price       float32 `json:"price"`
 	Quantity    uint32   `json:"quantity"`
 }
+
+type GetAllItemsResponse struct {
+	Items []GetItemResponse `json:"items"`
+}

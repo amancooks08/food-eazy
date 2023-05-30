@@ -122,3 +122,48 @@ func GetItem(inventoryService proto.InventoryServiceClient) http.HandlerFunc {
 		rw.Write(res)
 	})
 }
+
+func GetAllItems(inventoryService proto.InventoryServiceClient) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			rw.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		resp, err := inventoryService.GetAllItems(req.Context(), &proto.GetAllItemsRequest{})
+		if err != nil {
+			message := domain.Message{
+				Message: fmt.Sprintf("grpc received error: %s", err.Error()),
+			}
+			rw.WriteHeader(int(resp.StatusCode))
+			json.NewEncoder(rw).Encode(message)
+			return
+		}
+
+		var response domain.GetAllItemsResponse
+
+		for _, item := range resp.Items {
+			response.Items = append(response.Items, domain.GetItemResponse{
+				ID:          item.Id,
+				Name:        item.Name,
+				Description: item.Description,
+				Quantity:    item.Quantity,
+				Price:       item.Price,
+			})
+		}
+
+		res, err := json.Marshal(response)
+		if err != nil {
+			message := domain.Message{
+				Message: fmt.Sprintf("error marshalling response: %s", err.Error()),
+			}
+			rw.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(rw).Encode(message)
+			return
+		}
+
+		rw.WriteHeader(int(resp.StatusCode))
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Write(res)
+	})
+}
