@@ -27,7 +27,8 @@ message GetOrderRequest {
 }
 
 message GetOrderResponse {
-    Order order = 1;
+    uint32 statusCode = 1;
+    Order order = 2;
 }
 message GetAllOrdersRequest {
     uint32 user_id = 1;
