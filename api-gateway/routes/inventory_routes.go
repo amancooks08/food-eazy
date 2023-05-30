@@ -11,4 +11,5 @@ import (
 
 func InitInventoryRoutes(router *mux.Router, inventoryService inventoryproto.InventoryServiceClient) {
 	router.HandleFunc("/admin/inventory/item/add", authMiddleware(inventoryHandlers.AddItem(inventoryService))).Methods("POST")
+	router.HandleFunc("/admin/inventory/item", authMiddleware(inventoryHandlers.GetItem(inventoryService))).Methods("POST")
 }

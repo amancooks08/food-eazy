@@ -45,3 +45,15 @@ type AddItemResponse struct {
 	Price       float32 `json:"price"`
 	Quantity    uint32   `json:"quantity"`
 }
+
+type GetItemRequest struct {
+	ID int32 `json:"id"`
+}
+
+type GetItemResponse struct {
+	ID          int32  `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float32 `json:"price"`
+	Quantity    uint32   `json:"quantity"`
+}

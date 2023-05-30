@@ -34,7 +34,7 @@ func TestInventoryHandlersTestSuite(t *testing.T) {
 	suite.Run(t, new(InventoryHandlersTestSuite))
 }
 
-func (suite *InventoryHandlersTestSuite) TestAddItem() {
+func (suite *InventoryHandlersTestSuite) TestInventoryHandler_AddItem() {
 	t := suite.T()
 
 	t.Run("expect to return 201 when item added successfully", func(t *testing.T) {
@@ -393,3 +393,141 @@ func (suite *InventoryHandlersTestSuite) TestAddItem() {
 	})
 }
 
+
+func (suite *InventoryHandlersTestSuite) TestInventoryHandler_GetItem(){
+	t := suite.T()
+
+	t.Run("expect to return 200 when item is found", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.GetItemRequest{
+			ID: 1,
+		}
+
+		expectedRequest := proto.GetItemRequest{
+			Id: requestBody.ID,
+		}
+
+		expectedResponse := proto.GetItemResponse{
+			StatusCode:  http.StatusOK,
+			Id:          1,
+			Name:        "test1",
+			Description: "test1",
+			Price:       100,
+			Quantity:    10,
+		}
+
+		response := domain.GetItemResponse{
+			ID:          expectedResponse.Id,
+			Name:        expectedResponse.Name,
+			Description: expectedResponse.Description,
+			Price:       expectedResponse.Price,
+			Quantity:    expectedResponse.Quantity,
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("GET", "/admin/inventory/item/get", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("GetItem", context.Background(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := GetItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 404 when item is not found", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.GetItemRequest{
+			ID: 1,
+		}
+
+		expectedRequest := proto.GetItemRequest{
+			Id: requestBody.ID,
+		}
+
+		expectedResponse := proto.GetItemResponse{
+			StatusCode:  http.StatusNotFound,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: Item not found",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("GET", "/admin/inventory/item/get", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("GetItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("Item not found")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := GetItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusNotFound, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 400 when request body is empty", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.GetItemRequest{}
+
+		expectedRequest := proto.GetItemRequest{
+			Id: requestBody.ID,
+		}
+
+		expectedResponse := proto.GetItemResponse{
+			StatusCode:  http.StatusBadRequest,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: Invalid request",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("GET", "/admin/inventory/item/get", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("GetItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("Invalid request")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := GetItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+}
