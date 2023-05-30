@@ -12,12 +12,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthServiceTestSuite struct {
+type InventoryServiceTestSuite struct {
 	suite.Suite
 	db *gorm.DB
 }
 
-func (suite *AuthServiceTestSuite) SetupSuite() {
+func (suite *InventoryServiceTestSuite) SetupSuite() {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		suite.FailNow("failed to connect database")
@@ -26,17 +26,17 @@ func (suite *AuthServiceTestSuite) SetupSuite() {
 	models.InitInventoryModels(db)
 }
 
-func (suite *AuthServiceTestSuite) TearDownSuite() {
+func (suite *InventoryServiceTestSuite) TearDownSuite() {
 	_ = suite.db.Migrator().DropTable(&models.Item{})
 	sql, _ := suite.db.DB()
 	sql.Close()
 }
 
 func TestServiceTestSuite(t *testing.T) {
-	suite.Run(t, new(AuthServiceTestSuite))
+	suite.Run(t, new(InventoryServiceTestSuite))
 }
 
-func (suite *AuthServiceTestSuite) TestService_AddItem() {
+func (suite *InventoryServiceTestSuite) TestService_AddItem() {
 	t := suite.T()
 	type args struct {
 		name        string
@@ -149,7 +149,7 @@ func (suite *AuthServiceTestSuite) TestService_AddItem() {
 	}
 }
 
-func (suite *AuthServiceTestSuite) TestService_GetItem() {
+func (suite *InventoryServiceTestSuite) TestService_GetItem() {
 	t := suite.T()
 
 	t.Run("Get item successfully", func(t *testing.T) {
@@ -161,33 +161,33 @@ func (suite *AuthServiceTestSuite) TestService_GetItem() {
 		}
 
 		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
-		assert.Equal(t, http.StatusCreated, status)
+		assert.Equal(t, uint32(http.StatusCreated), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
 		status, item, err = GetItem(newItem.ID)
-		assert.Equal(t, http.StatusOK, status)
+		assert.Equal(t, uint32(http.StatusOK), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, item)
 	})
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
 		status, item, err := GetItem(0)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
 		status, item, err := GetItem(99999)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 }
 
 
-func (suite *AuthServiceTestSuite) TestService_GetAllITems() {
+func (suite *InventoryServiceTestSuite) TestService_GetAllITems() {
 	t := suite.T()
 
 	t.Run("Get all items successfully", func(t *testing.T) {
@@ -199,7 +199,7 @@ func (suite *AuthServiceTestSuite) TestService_GetAllITems() {
 		}
 
 		status, newItem1, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
-		assert.Equal(t, http.StatusCreated, status)
+		assert.Equal(t, uint32(http.StatusCreated), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem1)
 
@@ -211,19 +211,19 @@ func (suite *AuthServiceTestSuite) TestService_GetAllITems() {
 		}
 
 		status, newItem2, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
-		assert.Equal(t, http.StatusCreated, status)
+		assert.Equal(t, uint32(http.StatusCreated), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem2)
 
 		status, items, err := GetAllItems()
-		assert.Equal(t, http.StatusOK, status)
+		assert.Equal(t, uint32(http.StatusOK), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, items)
 		assert.Equal(t, 4, len(items))
 	})
 }
 
-func (suite *AuthServiceTestSuite) TestService_AddQuantity() {
+func (suite *InventoryServiceTestSuite) TestService_AddQuantity() {
 	t := suite.T()
 
 	t.Run("Add quantity successfully", func(t *testing.T) {
@@ -235,12 +235,12 @@ func (suite *AuthServiceTestSuite) TestService_AddQuantity() {
 		}
 
 		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
-		assert.Equal(t, http.StatusCreated, status)
+		assert.Equal(t, uint32(http.StatusCreated), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
 		status, newItem, err = AddQuantity(newItem.ID, 100)
-		assert.Equal(t, http.StatusOK, status)
+		assert.Equal(t, uint32(http.StatusOK), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 		assert.Equal(t, 200, int(newItem.Quantity))
@@ -248,20 +248,20 @@ func (suite *AuthServiceTestSuite) TestService_AddQuantity() {
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
 		status, item, err := AddQuantity(0, 100)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
 		status, item, err := AddQuantity(999, 100)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 }
 
-func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
+func (suite *InventoryServiceTestSuite) TestService_LowerQuantity() {
 	t := suite.T()
 
 	t.Run("Lower quantity successfully", func(t *testing.T) {
@@ -273,12 +273,12 @@ func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
 		}
 
 		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
-		assert.Equal(t, http.StatusCreated, status)
+		assert.Equal(t, uint32(http.StatusCreated), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
 		status, newItem, err = LowerQuantity(newItem.ID, 100)
-		assert.Equal(t, http.StatusOK, status)
+		assert.Equal(t, uint32(http.StatusOK), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 		assert.Equal(t, 0, int(newItem.Quantity))
@@ -286,14 +286,14 @@ func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
 		status, item, err := LowerQuantity(0, 100)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
 		status, item, err := LowerQuantity(999, 100)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
@@ -307,19 +307,19 @@ func (suite *AuthServiceTestSuite) TestService_LowerQuantity() {
 		}
 
 		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
-		assert.Equal(t, http.StatusCreated, status)
+		assert.Equal(t, uint32(http.StatusCreated), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
 		status, newItem, err = LowerQuantity(newItem.ID, 200)
-		assert.Equal(t, http.StatusConflict, status)
+		assert.Equal(t, uint32(http.StatusConflict), status)
 		assert.Error(t, err)
 		assert.Nil(t, newItem)
 	})
 }
 
 
-func (suite *AuthServiceTestSuite) TestService_DeleteItem() {
+func (suite *InventoryServiceTestSuite) TestService_DeleteItem() {
 	t := suite.T()
 
 	t.Run("Delete item successfully", func(t *testing.T) {
@@ -331,29 +331,29 @@ func (suite *AuthServiceTestSuite) TestService_DeleteItem() {
 		}
 
 		status, newItem, err := AddItem(item.Name, item.Description, item.Price, item.Quantity)
-		assert.Equal(t, http.StatusCreated, status)
+		assert.Equal(t, uint32(http.StatusCreated), status)
 		assert.NoError(t, err)
 		assert.NotNil(t, newItem)
 
 		status, err = DeleteItem(newItem.ID)
-		assert.Equal(t, http.StatusOK, status)
+		assert.Equal(t, uint32(http.StatusOK), status)
 		assert.NoError(t, err)
 
 		status, item, err = GetItem(newItem.ID)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 		assert.Nil(t, item)
 	})
 
 	t.Run("expect error with invalid id", func(t *testing.T) {
 		status, err := DeleteItem(0)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 	})
 
 	t.Run("expect error with non-exist id", func(t *testing.T) {
 		status, err := DeleteItem(999)
-		assert.Equal(t, http.StatusNotFound, status)
+		assert.Equal(t, uint32(http.StatusNotFound), status)
 		assert.Error(t, err)
 	})
 }

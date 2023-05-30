@@ -20,3 +20,4 @@ func InitGRPCClient() {
 	logger.Info("Connecting to inventory service server...")
 	InventoryServiceClient = proto.NewInventoryServiceClient(conn)
 }
+
