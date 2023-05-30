@@ -2,7 +2,7 @@ package models
 
 import (
 	"net/http"
-
+	"order-service/errors"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +25,7 @@ func InitOrderModels(database *gorm.DB) {
 
 func CreateOrder(order *Order) (uint32, error) {
 	if order == nil {
-		return http.StatusBadRequest, nil
+		return http.StatusBadRequest, errors.ErrInvalidOrder
 	}
 	if err := db.Create(order).Error; err != nil {
 		return http.StatusInternalServerError, err

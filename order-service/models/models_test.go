@@ -59,6 +59,14 @@ func (suite *OrderModelTestSuite) TestOrderModel_CreateOrder() {
 			wantErr:    false,
 			wantStatus: http.StatusCreated,
 		},
+		{
+			name: "CreateOrder failed due to nil order",
+			args: args{
+				order: nil,
+			},
+			wantErr:    true,
+			wantStatus: http.StatusBadRequest,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
