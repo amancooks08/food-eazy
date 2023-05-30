@@ -38,7 +38,7 @@ func RegisterUser(authService proto.AuthServiceClient) http.HandlerFunc {
 			message := domain.Message{
 				Message: fmt.Sprintf("grpc received error: %s", err.Error()),
 			}
-			rw.WriteHeader(http.StatusInternalServerError)
+			rw.WriteHeader(int(resp.StatusCode))
 			json.NewEncoder(rw).Encode(message)
 			return
 		}

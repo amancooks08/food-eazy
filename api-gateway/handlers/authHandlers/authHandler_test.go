@@ -151,7 +151,7 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 		}
 
 		expectedResponse := proto.RegisterUserResponse{
-			StatusCode: http.StatusBadRequest,
+			StatusCode: http.StatusConflict,
 			Message: "invalid request body",
 		}
 
@@ -302,7 +302,7 @@ func (suite *AuthHandlerTestSuite) TestLoginUser() {
 		}
 
 		expectedResponse := proto.LoginUserResponse{
-			StatusCode: http.StatusBadRequest,
+			StatusCode: http.StatusUnauthorized,
 			Message: "invalid request body",
 		}
 
