@@ -10,5 +10,6 @@ func InitRouter(deps *dependencies.Dependencies) *mux.Router {
 	router := mux.NewRouter()
 
 	InitAuthRoutes(router, deps.AuthService)
+	InitInventoryRoutes(router, deps.InventoryService)
 	return router
 }
