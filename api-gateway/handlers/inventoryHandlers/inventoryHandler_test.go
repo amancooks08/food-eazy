@@ -1,0 +1,395 @@
+package inventoryHandlers
+
+import (
+	"api-gateway/dependencies"
+	"api-gateway/domain"
+	mocks "api-gateway/mocks/inventorymocks"
+	proto "api-gateway/proto/inventory"
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+)
+
+type InventoryHandlersTestSuite struct {
+	suite.Suite
+	grpc *mocks.InventoryServiceClient
+}
+
+func (suite *InventoryHandlersTestSuite) SetupTest() {
+	suite.grpc = &mocks.InventoryServiceClient{}
+}
+
+func (suite *InventoryHandlersTestSuite) TearDownTest() {
+	suite.grpc.AssertExpectations(suite.T())
+}
+
+func TestInventoryHandlersTestSuite(t *testing.T) {
+	suite.Run(t, new(InventoryHandlersTestSuite))
+}
+
+func (suite *InventoryHandlersTestSuite) TestAddItem() {
+	t := suite.T()
+
+	t.Run("expect to return 201 when item added successfully", func(t *testing.T) {
+		// Arrange
+
+		requestBody := domain.AddItemRequest{
+			Name:        "test1",
+			Description: "test1",
+			Price:       100,
+			Quantity:    10,
+		}
+
+		expectedRequest := proto.AddItemRequest{
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Quantity:    requestBody.Quantity,
+			Price:       requestBody.Price,
+		}
+
+		expectedResponse := proto.AddItemResponse{
+			StatusCode:  http.StatusCreated,
+			Id:          1,
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Price:       requestBody.Price,
+			Quantity:    requestBody.Quantity,
+		}
+
+		response := domain.AddItemResponse{
+			ID:          1,
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Price:       requestBody.Price,
+			Quantity:    requestBody.Quantity,
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("POST", "/admin/inventory/item/add", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("AddItem", context.Background(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusCreated, res.Code)
+		assert.Equal(t, string(exp), res.Body.String())
+	})
+
+	t.Run("expect to return 400 when item name is empty", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.AddItemRequest{
+			Name:        "",
+			Description: "test1",
+			Price:       100,
+			Quantity:    10,
+		}
+
+		expectedRequest := proto.AddItemRequest{
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Quantity:    requestBody.Quantity,
+			Price:       requestBody.Price,
+		}
+
+		expectedResponse := proto.AddItemResponse{
+			StatusCode:  http.StatusBadRequest,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: empty field",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("POST", "/admin/inventory/item/add", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("AddItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("empty field")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 400 when item description is empty", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.AddItemRequest{
+			Name:        "test1",
+			Description: "",
+			Price:       100,
+			Quantity:    10,
+		}
+
+		expectedRequest := proto.AddItemRequest{
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Quantity:    requestBody.Quantity,
+			Price:       requestBody.Price,
+		}
+
+		expectedResponse := proto.AddItemResponse{
+			StatusCode:  http.StatusBadRequest,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: empty field",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("POST", "/admin/inventory/item/add", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("AddItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("empty field")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 400 when item price is 0", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.AddItemRequest{
+			Name:        "test1",
+			Description: "test1",
+			Price:       0,
+			Quantity:    10,
+		}
+
+		expectedRequest := proto.AddItemRequest{
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Quantity:    requestBody.Quantity,
+			Price:       requestBody.Price,
+		}
+
+		expectedResponse := proto.AddItemResponse{
+			StatusCode:  http.StatusBadRequest,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: empty field",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("POST", "/admin/inventory/item/add", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("AddItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("empty field")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 400 when item quantity is 0", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.AddItemRequest{
+			Name:        "test1",
+			Description: "test1",
+			Price:       100,
+			Quantity:    0,
+		}
+
+		expectedRequest := proto.AddItemRequest{
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Quantity:    requestBody.Quantity,
+			Price:       requestBody.Price,
+		}
+
+		expectedResponse := proto.AddItemResponse{
+			StatusCode:  http.StatusBadRequest,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: empty field",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("POST", "/admin/inventory/item/add", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("AddItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("empty field")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 400 when item price is negative", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.AddItemRequest{
+			Name:        "test1",
+			Description: "test1",
+			Price:       -100,
+			Quantity:    10,
+		}
+
+		expectedRequest := proto.AddItemRequest{
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Quantity:    requestBody.Quantity,
+			Price:       requestBody.Price,
+		}
+
+		expectedResponse := proto.AddItemResponse{
+			StatusCode:  http.StatusBadRequest,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: empty field",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("POST", "/admin/inventory/item/add", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("AddItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("empty field")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusBadRequest, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 422 when Item already exists", func(t *testing.T) {
+		// Arrange
+		requestBody := domain.AddItemRequest{
+			Name:        "test1",
+			Description: "test1",
+			Price:       100,
+			Quantity:    10,
+		}
+
+		expectedRequest := proto.AddItemRequest{
+			Name:        requestBody.Name,
+			Description: requestBody.Description,
+			Quantity:    requestBody.Quantity,
+			Price:       requestBody.Price,
+		}
+
+		expectedResponse := proto.AddItemResponse{
+			StatusCode:  http.StatusUnprocessableEntity,
+			Id:          0,
+			Name:        "",
+			Description: "",
+			Price:       0,
+			Quantity:    0,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: Item already exists",
+		}
+
+		exp, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		expectedReq, err := json.Marshal(expectedRequest)
+		assert.NoError(t, err)
+		jsonRequest := string(expectedReq)
+		req := httptest.NewRequest("POST", "/admin/inventory/item/add", strings.NewReader(jsonRequest))
+		res := httptest.NewRecorder()
+
+		// Act
+		suite.grpc.On("AddItem", context.Background(), &expectedRequest).Return(&expectedResponse, errors.New("Item already exists")).Once()
+		deps := dependencies.Dependencies{
+			InventoryService: suite.grpc,
+		}
+		// Assert
+		handler := AddItem(deps.InventoryService)
+		handler.ServeHTTP(res, req)
+		assert.Equal(t, http.StatusUnprocessableEntity, res.Code)
+		assert.Equal(t, string(exp), strings.Split(res.Body.String(), "\n")[0])
+	})
+}
+

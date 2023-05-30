@@ -28,5 +28,20 @@ type LoginUserRequest struct {
 
 type LoginUserResponse struct {
 	Message string `json:"message"`
-	Token string `json:"token"`
+	Token   string `json:"token"`
+}
+
+type AddItemRequest struct {
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float32 `json:"price"`
+	Quantity    uint32   `json:"quantity"`
+}
+
+type AddItemResponse struct {
+	ID          int32  `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float32 `json:"price"`
+	Quantity    uint32   `json:"quantity"`
 }
