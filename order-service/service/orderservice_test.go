@@ -27,6 +27,8 @@ func (suite *OrderServiceTestSuite) SetupSuite() {
 	}
 	suite.db = db
 	models.InitOrderModels(db)
+
+	suite.mockclient = &mocks.InventoryServiceClient{}
 }
 
 func (suite *OrderServiceTestSuite) TearDownSuite() {
