@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"order-service/errors"
 	grpc "order-service/inventoryClient"
+	proto "order-service/proto/inventorypb"
 	"order-service/models"
 	"time"
 )
@@ -14,7 +15,7 @@ func PlaceOrder(userID uint32, itemID uint32, quantity uint32) (uint32, *models.
 		return http.StatusBadRequest, nil, errors.ErrEmptyField
 	}
 
-	itemResponse, err := grpc.GetItem(context.Background(), itemID)
+	itemResponse, err := grpc.InventoryServiceClient.GetItem(context.Background(), &proto.GetItemRequest{Id: itemID})
 	if err != nil {
 		return itemResponse.StatusCode, nil, err
 	}
@@ -36,7 +37,7 @@ func PlaceOrder(userID uint32, itemID uint32, quantity uint32) (uint32, *models.
 		return status, nil, err
 	}
 
-	updateResponse, err := grpc.LowerQuantity(context.Background(), itemID, quantity)
+	updateResponse, err := grpc.InventoryServiceClient.LowerQuantity(context.Background(), &proto.LowerQuantityRequest{ Id: itemID, Quantity: quantity})
 	if err != nil {
 		return updateResponse.StatusCode, nil, err
 	}
