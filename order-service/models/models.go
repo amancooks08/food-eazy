@@ -32,3 +32,16 @@ func CreateOrder(order *Order) (uint32, error) {
 	}
 	return http.StatusCreated, nil
 }
+
+func GetOrder(userID uint32) (uint32, *Order, error){
+	if userID == 0 {
+		return http.StatusBadRequest, nil, errors.ErrEmptyField
+	}
+
+	order := &Order{}
+	if err := db.Where("user_id = ?", userID).First(order).Error; err != nil {
+		return http.StatusInternalServerError, nil, err
+	}
+	
+	return http.StatusOK, order, nil
+}

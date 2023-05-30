@@ -224,3 +224,62 @@ func (suite *OrderServiceTestSuite) TestService_PlaceOrder() {
 		assert.Nil(t, placedOrder)
 	})
 }
+
+func (suite *OrderServiceTestSuite) TestGetOrder() {
+	t := suite.T()
+
+	t.Run("GetOrder success", func(t *testing.T) {
+		//Arrange
+		itemID, userID := uint32(1), uint32(1)
+		quantity := uint32(4)
+
+		itemResponse := &proto.GetItemResponse{
+			StatusCode:  http.StatusOK,
+			Id:          itemID,
+			Name:        "item",
+			Description: "item description",
+			Price:       10,
+			Quantity:    12,
+		}
+
+		//Act
+		suite.service.client.(*mocks.InventoryServiceClient).On("GetItem", context.Background(), &proto.GetItemRequest{
+			Id: itemID}).Return(itemResponse, nil).Once()
+
+		suite.service.client.(*mocks.InventoryServiceClient).On("LowerQuantity", context.Background(), &proto.LowerQuantityRequest{
+			Id:       itemID,
+			Quantity: quantity,
+		}).Return(&proto.LowerQuantityResponse{
+			StatusCode: http.StatusOK,
+			Id:         itemID,
+			Quantity:   itemResponse.Quantity - quantity,
+		}, nil).Once()
+
+		_, order, _ := suite.service.PlaceOrder(userID, itemID, quantity)
+
+		//Act
+		status, getOrder, err := suite.service.GetOrder(order.ID)
+
+		//Assert
+		assert.NoError(t, err)
+		assert.Equal(t, uint32(http.StatusOK), status)
+		assert.Equal(t, order.Amount, getOrder.Amount)
+		assert.Equal(t, order.ItemID, getOrder.ItemID)
+		assert.Equal(t, order.Quantity, getOrder.Quantity)
+		assert.Equal(t, order.UserID, getOrder.UserID)
+		assert.Equal(t, order.ID, getOrder.ID)
+	})
+
+	t.Run("GetOrder failed due to zero orderID", func(t *testing.T) {
+		//Arrange
+		orderID := uint32(0)
+
+		//Act
+		status, getOrder, err := suite.service.GetOrder(orderID)
+
+		//Assert
+		assert.Error(t, err)
+		assert.Equal(t, uint32(http.StatusBadRequest), status)
+		assert.Nil(t, getOrder)
+	})
+}

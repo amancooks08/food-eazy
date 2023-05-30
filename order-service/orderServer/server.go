@@ -41,3 +41,24 @@ func (s *GRPCServer) PlaceOrder(ctx context.Context, req *proto.PlaceOrderReques
 		},
 	}, nil
 }
+
+func (s *GRPCServer) GetOrder(ctx context.Context, req *proto.GetOrderRequest) (*proto.GetOrderResponse, error) {
+	statusCode, order, err := s.OrderService.GetOrder(req.OrderId)
+	if err != nil {
+		return &proto.GetOrderResponse{
+			StatusCode: statusCode,
+			Order:      nil,
+		}, err
+	}
+
+	return &proto.GetOrderResponse{
+		StatusCode: statusCode,
+		Order: &proto.Order{
+			OrderId:  order.ID,
+			UserId:   order.UserID,
+			ItemId:   order.ItemID,
+			Quantity: order.Quantity,
+			Amount:   order.Amount,
+		},
+	}, nil
+}

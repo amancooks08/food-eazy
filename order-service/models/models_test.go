@@ -80,3 +80,45 @@ func (suite *OrderModelTestSuite) TestOrderModel_CreateOrder() {
 		})
 	}
 }
+
+func (suite *OrderModelTestSuite) TestOrderModel_GetOrder() {
+	t := suite.T()
+
+	t.Run("GetOrder successfully", func(t *testing.T) {
+		//Arrange
+		orderID := uint32(1)
+		order := &Order{
+			UserID:   1,
+			ItemID:   1,
+			Quantity: 1,
+			Amount:   1.0,
+		}
+		suite.db.Create(order)
+
+		//Act
+		gotStatus, gotOrder, err := GetOrder(orderID)
+
+		//Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, int(gotStatus))
+		assert.Equal(t, order.Amount, gotOrder.Amount)
+		assert.Equal(t, order.ItemID, gotOrder.ItemID)
+		assert.Equal(t, order.Quantity, gotOrder.Quantity)
+		assert.Equal(t, order.UserID, gotOrder.UserID)
+		assert.Equal(t, orderID, gotOrder.ID)
+
+	})
+
+	t.Run("GetOrder failed due to invalid orderID", func(t *testing.T) {
+		//Arrange
+		orderID := uint32(0)
+
+		//Act
+		gotStatus, gotOrder, err := GetOrder(orderID)
+
+		//Assert
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusBadRequest, int(gotStatus))
+		assert.Nil(t, gotOrder)
+	})
+} 

@@ -54,3 +54,16 @@ func (service *OrderService) PlaceOrder(userID uint32, itemID uint32, quantity u
 
 	return status, order, nil
 }
+
+func (service *OrderService) GetOrder(userID uint32) (uint32, *models.Order, error) {
+	if userID == 0 {
+		return http.StatusBadRequest, nil, errors.ErrEmptyField
+	}
+
+	status, order, err := models.GetOrder(userID)
+	if err != nil {
+		return status, nil, err
+	}
+
+	return http.StatusOK, order, nil
+}
