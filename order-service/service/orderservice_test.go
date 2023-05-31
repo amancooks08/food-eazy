@@ -323,10 +323,10 @@ func (suite *OrderServiceTestSuite) TestOrderService_GetAllOrders() {
 		//Assert
 		assert.NoError(t, err)
 		assert.Equal(t, uint32(http.StatusOK), status)
-		assert.Equal(t, order.Amount, getAllOrders[0].Amount)
-		assert.Equal(t, order.ItemID, getAllOrders[0].ItemID)
-		assert.Equal(t, order.Quantity, getAllOrders[0].Quantity)
-		assert.Equal(t, order.UserID, getAllOrders[0].UserID)
-		assert.Equal(t, order.ID, getAllOrders[0].ID)
+		assert.Equal(t, order.Amount, getAllOrders[1].Amount)
+		assert.Equal(t, order.ItemID, getAllOrders[1].ItemID)
+		assert.Equal(t, order.Quantity, getAllOrders[1].Quantity)
+		assert.Equal(t, order.UserID, getAllOrders[1].UserID)
+		assert.EqualValues(t, order.ID, getAllOrders[1].ID)
 	})
 }

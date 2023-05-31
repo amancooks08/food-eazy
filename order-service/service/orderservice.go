@@ -26,6 +26,10 @@ func (service *OrderService) PlaceOrder(userID uint32, itemID uint32, quantity u
 	}
 
 	itemResponse, err := service.client.GetItem(context.Background(), &proto.GetItemRequest{Id: itemID})
+	if itemResponse == nil {
+		return http.StatusBadGateway, nil, errors.ErrBadGateway
+	}
+	
 	if err != nil {
 		return itemResponse.StatusCode, nil, err
 	}

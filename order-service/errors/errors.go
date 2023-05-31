@@ -9,4 +9,5 @@ var (
 	ErrInvalidOrder	= errors.New("invalid order")
 	ErrEmptyField = errors.New("empty field(s)")
 	ErrLimitedSupplies = errors.New("limited supplies")
+	ErrBadGateway = errors.New("bad gateway while connecting to inventory service")
 )
