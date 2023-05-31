@@ -3,8 +3,8 @@ package orderServer
 import (
 	"context"
 
-	proto "order-service/proto/orderpb"
 	client "order-service/proto/inventorypb"
+	proto "order-service/proto/orderpb"
 	"order-service/service"
 )
 
@@ -60,5 +60,31 @@ func (s *GRPCServer) GetOrder(ctx context.Context, req *proto.GetOrderRequest) (
 			Quantity: order.Quantity,
 			Amount:   order.Amount,
 		},
+	}, nil
+}
+
+func (s *GRPCServer) GetAllOrders(ctx context.Context, req *proto.GetAllOrdersRequest) (*proto.GetAllOrdersResponse, error) {
+	statusCode, orders, err := s.OrderService.GetAllOrders(req.UserId)
+	if err != nil {
+		return &proto.GetAllOrdersResponse{
+			StatusCode: statusCode,
+			Orders:     nil,
+		}, err
+	}
+
+	var ordersResponse []*proto.Order
+	for _, order := range orders {
+		ordersResponse = append(ordersResponse, &proto.Order{
+			OrderId:  order.ID,
+			UserId:   order.UserID,
+			ItemId:   order.ItemID,
+			Quantity: order.Quantity,
+			Amount:   order.Amount,
+		})
+	}
+
+	return &proto.GetAllOrdersResponse{
+		StatusCode: statusCode,
+		Orders:     ordersResponse,
 	}, nil
 }
