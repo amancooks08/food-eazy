@@ -61,3 +61,13 @@ type GetItemResponse struct {
 type GetAllItemsResponse struct {
 	Items []GetItemResponse `json:"items"`
 }
+
+type UpdateQuantityRequest struct {
+	ID       int32  `json:"id"`
+	Quantity uint32 `json:"quantity"`
+}
+
+type UpdateQuantityResponse struct {
+	ID       int32  `json:"id"`
+	Quantity uint32 `json:"quantity"`
+}
