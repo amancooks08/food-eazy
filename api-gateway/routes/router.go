@@ -11,5 +11,6 @@ func InitRouter(deps *dependencies.Dependencies) *mux.Router {
 
 	InitAuthRoutes(router, deps.AuthService)
 	InitInventoryRoutes(router, deps.InventoryService)
+	InitOrderRoutes(router, deps.OrderService)
 	return router
 }

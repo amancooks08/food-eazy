@@ -35,15 +35,15 @@ type AddItemRequest struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float32 `json:"price"`
-	Quantity    uint32   `json:"quantity"`
+	Quantity    uint32  `json:"quantity"`
 }
 
 type AddItemResponse struct {
-	ID          int32  `json:"id"`
+	ID          int32   `json:"id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float32 `json:"price"`
-	Quantity    uint32   `json:"quantity"`
+	Quantity    uint32  `json:"quantity"`
 }
 
 type GetItemRequest struct {
@@ -51,11 +51,11 @@ type GetItemRequest struct {
 }
 
 type GetItemResponse struct {
-	ID          int32  `json:"id"`
+	ID          int32   `json:"id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float32 `json:"price"`
-	Quantity    uint32   `json:"quantity"`
+	Quantity    uint32  `json:"quantity"`
 }
 
 type GetAllItemsResponse struct {
@@ -70,4 +70,15 @@ type UpdateQuantityRequest struct {
 type UpdateQuantityResponse struct {
 	ID       int32  `json:"id"`
 	Quantity uint32 `json:"quantity"`
+}
+
+type PlaceOrderRequest struct {
+	ItemID   uint32  `json:"item_id"`
+	Quantity uint32 `json:"quantity"`
+}
+
+type PlaceOrderResponse struct {
+	OrderID   uint32  `json:"order_id"`
+	Amount    float32 `json:"amount"`
+	OrderTime string  `json:"order_time"`
 }
