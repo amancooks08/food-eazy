@@ -73,7 +73,7 @@ type UpdateQuantityResponse struct {
 }
 
 type PlaceOrderRequest struct {
-	ItemID   uint32  `json:"item_id"`
+	ItemID   uint32 `json:"item_id"`
 	Quantity uint32 `json:"quantity"`
 }
 
@@ -82,3 +82,21 @@ type PlaceOrderResponse struct {
 	Amount    float32 `json:"amount"`
 	OrderTime string  `json:"order_time"`
 }
+
+type Order struct {
+	OrderID   uint32  `json:"order_id"`
+	UserID    uint32  `json:"user_id"`
+	ItemID    uint32  `json:"item_id"`
+	Quantity  uint32  `json:"quantity"`
+	Amount    float32 `json:"amount"`
+	OrderTime string  `json:"order_time"`
+}
+
+type GetOrderResponse struct {
+	Order *Order `json:"order"`
+}
+
+type GetAllOrdersResponse struct {
+	Orders []*Order `json:"orders"`
+}
+

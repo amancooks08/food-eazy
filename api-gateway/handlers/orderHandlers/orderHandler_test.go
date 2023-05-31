@@ -75,7 +75,7 @@ func (suite *OrderHandlerTestSuite) TestOrderHandler_PlaceOrder() {
 		assert.NoError(t, err)
 
 		jsonRequest := string(reqBody)
-		req := httptest.NewRequest("POST", "/order/place", strings.NewReader(jsonRequest))
+		req := httptest.NewRequest("POST", "/user/order", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 		ctx := req.Context()
 		req = req.WithContext(context.WithValue(ctx, "id", 1))
@@ -111,7 +111,7 @@ func (suite *OrderHandlerTestSuite) TestOrderHandler_PlaceOrder() {
 		assert.NoError(t, err)
 
 		jsonRequest := string(reqBody)
-		req := httptest.NewRequest("POST", "/user/order/place", strings.NewReader(jsonRequest))
+		req := httptest.NewRequest("POST", "/user/order", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 		ctx := req.Context()
 		req = req.WithContext(context.WithValue(ctx, "id", 0))
@@ -157,7 +157,7 @@ func (suite *OrderHandlerTestSuite) TestOrderHandler_PlaceOrder() {
 		assert.NoError(t, err)
 
 		jsonRequest := string(reqBody)
-		req := httptest.NewRequest("POST", "/order/place", strings.NewReader(jsonRequest))
+		req := httptest.NewRequest("POST", "/user/order", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 		ctx := req.Context()
 		req = req.WithContext(context.WithValue(ctx, "id", 1))
@@ -193,7 +193,7 @@ func (suite *OrderHandlerTestSuite) TestOrderHandler_PlaceOrder() {
 		assert.NoError(t, err)
 
 		jsonRequest := string(reqBody)
-		req := httptest.NewRequest("POST", "/order/place", strings.NewReader(jsonRequest))
+		req := httptest.NewRequest("POST", "/user/order", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 
 		// Act
@@ -205,6 +205,223 @@ func (suite *OrderHandlerTestSuite) TestOrderHandler_PlaceOrder() {
 
 		// Assert
 		assert.Equal(t, http.StatusUnauthorized, res.Code)
+		assert.Equal(t, string(respBody), strings.Split(res.Body.String(), "\n")[0])
+	})
+}
+
+
+func (suite *OrderHandlerTestSuite) TestOrderHandlers_GetOrders() {
+	t := suite.T()
+
+	t.Run("expect to return 200 and return all orders, when id is not given", func(t *testing.T) {
+		// Arrange
+		expectedRequest := proto.GetAllOrdersRequest{
+			UserId: 1,
+		}
+
+		expectedResponse := proto.GetAllOrdersResponse{
+			StatusCode: 200,
+			Orders: []*proto.Order{
+				{
+					OrderId:   1,
+					UserId:    1,
+					ItemId:    1,
+					Quantity:  2,
+					Amount:    200,
+					OrderTime: "2021-01-01 00:00:00",
+				},
+			},
+		}
+
+		response := domain.GetAllOrdersResponse{
+			Orders: []*domain.Order{
+				{
+					OrderID:   1,
+					UserID:    1,
+					ItemID:    1,
+					Quantity:  2,
+					Amount:    200,
+					OrderTime: "2021-01-01 00:00:00",
+				},
+			},
+		}
+
+		respBody, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/user/order", nil)
+		res := httptest.NewRecorder()
+		ctx := req.Context()
+		req = req.WithContext(context.WithValue(ctx, "id", 1))
+
+		// Act
+		suite.grpc.On("GetAllOrders", req.Context(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := dependencies.Dependencies{
+			OrderService: suite.grpc,
+		}
+		handler := GetOrders(deps.OrderService)
+		handler.ServeHTTP(res, req)
+
+		// Assert
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, string(respBody), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 200 and return the order of which the id is given", func(t *testing.T) {
+		// Arrange
+		expectedRequest := proto.GetOrderRequest{
+			OrderId: 1,
+		}
+
+		expectedResponse := proto.GetOrderResponse{
+			StatusCode: 200,
+			Order: &proto.Order{
+				OrderId:   1,
+				UserId:    1,
+				ItemId:    1,
+				Quantity:  2,
+				Amount:    200,
+				OrderTime: "2021-01-01 00:00:00",
+			},
+		}
+
+		response := domain.GetOrderResponse{
+			Order: &domain.Order{
+				OrderID:   expectedResponse.Order.OrderId,
+				UserID:    expectedResponse.Order.UserId,
+				ItemID:    expectedResponse.Order.ItemId,
+				Quantity:  expectedResponse.Order.Quantity,
+				Amount:    expectedResponse.Order.Amount,
+				OrderTime: expectedResponse.Order.OrderTime,
+			},
+		}
+
+		respBody, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/user/order?id=1", nil)
+		res := httptest.NewRecorder()
+		ctx := req.Context()
+		req = req.WithContext(context.WithValue(ctx, "id", 1))
+
+		// Act
+		suite.grpc.On("GetOrder", req.Context(), &expectedRequest).Return(&expectedResponse, nil).Once()
+		deps := dependencies.Dependencies{
+			OrderService: suite.grpc,
+		}
+		handler := GetOrders(deps.OrderService)
+		handler.ServeHTTP(res, req)
+
+		// Assert
+		assert.Equal(t, http.StatusOK, res.Code)
+		assert.Equal(t, string(respBody), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 404 when order is not found", func(t *testing.T) {
+		// Arrange
+		expectedRequest := proto.GetOrderRequest{
+			OrderId: 1,
+		}
+
+		expectedResponse := proto.GetOrderResponse{
+			StatusCode: 404,
+			Order: nil,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: order not found",
+		}
+
+		respBody, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/user/order?id=1", nil)
+		res := httptest.NewRecorder()
+		ctx := req.Context()
+		req = req.WithContext(context.WithValue(ctx, "id", 1))
+
+		// Act
+		suite.grpc.On("GetOrder", req.Context(), &expectedRequest).Return(&expectedResponse, errors.New("order not found")).Once()
+		deps := dependencies.Dependencies{
+			OrderService: suite.grpc,
+		}
+		handler := GetOrders(deps.OrderService)
+		handler.ServeHTTP(res, req)
+
+		// Assert
+		assert.Equal(t, http.StatusNotFound, res.Code)
+		assert.Equal(t, string(respBody), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 404 when user does not have previous orders", func(t *testing.T) {
+		// Arrange
+		expectedRequest := proto.GetAllOrdersRequest{
+			UserId: 1,
+		}
+
+		expectedResponse := proto.GetAllOrdersResponse{
+			StatusCode: 404,
+			Orders: nil,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: order not found",
+		}
+
+		respBody, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/user/order", nil)
+		res := httptest.NewRecorder()
+		ctx := req.Context()
+		req = req.WithContext(context.WithValue(ctx, "id", 1))
+
+		// Act
+		suite.grpc.On("GetAllOrders", req.Context(), &expectedRequest).Return(&expectedResponse, errors.New("order not found")).Once()
+		deps := dependencies.Dependencies{
+			OrderService: suite.grpc,
+		}
+		handler := GetOrders(deps.OrderService)
+		handler.ServeHTTP(res, req)
+
+		// Assert
+		assert.Equal(t, http.StatusNotFound, res.Code)
+		assert.Equal(t, string(respBody), strings.Split(res.Body.String(), "\n")[0])
+	})
+
+	t.Run("expect to return 500 when grpc returns an error", func(t *testing.T) {
+		// Arrange
+		expectedRequest := proto.GetAllOrdersRequest{
+			UserId: 1,
+		}
+
+		expectedResponse := proto.GetAllOrdersResponse{
+			StatusCode: 500,
+			Orders: nil,
+		}
+
+		response := domain.Message{
+			Message: "grpc received error: mocked error",
+		}
+
+		respBody, err := json.Marshal(response)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/user/order", nil)
+		res := httptest.NewRecorder()
+		ctx := req.Context()
+		req = req.WithContext(context.WithValue(ctx, "id", 1))
+
+		// Act
+		suite.grpc.On("GetAllOrders", req.Context(), &expectedRequest).Return(&expectedResponse, errors.New("mocked error")).Once()
+		deps := dependencies.Dependencies{
+			OrderService: suite.grpc,
+		}
+		handler := GetOrders(deps.OrderService)
+		handler.ServeHTTP(res, req)
+
+		// Assert
+		assert.Equal(t, http.StatusInternalServerError, res.Code)
 		assert.Equal(t, string(respBody), strings.Split(res.Body.String(), "\n")[0])
 	})
 }

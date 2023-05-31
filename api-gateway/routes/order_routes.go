@@ -8,5 +8,6 @@ import (
 )
 
 func InitOrderRoutes(router *mux.Router, orderService proto.OrderServiceClient) {
-	router.Handle("/order/place", authMiddleware(orderHandlers.PlaceOrder(orderService))).Methods("POST")
+	router.HandleFunc("/user/order", authMiddleware(orderHandlers.PlaceOrder(orderService))).Methods("POST")
+	router.HandleFunc("/user/order", authMiddleware(orderHandlers.GetOrders(orderService))).Methods("GET")
 }
