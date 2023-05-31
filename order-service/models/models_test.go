@@ -121,4 +121,72 @@ func (suite *OrderModelTestSuite) TestOrderModel_GetOrder() {
 		assert.Equal(t, http.StatusBadRequest, int(gotStatus))
 		assert.Nil(t, gotOrder)
 	})
+
+	t.Run("GetOrder failed due to no order", func(t *testing.T) {
+		//Arrange
+		orderID := uint32(3)
+
+		//Act
+		gotStatus, gotOrder, err := GetOrder(orderID)
+
+		//Assert
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, int(gotStatus))
+		assert.Nil(t, gotOrder)
+	})
 } 
+
+
+func (suite *OrderModelTestSuite) TestOrderModels_GetAllOrders() {
+	t := suite.T()
+
+	t.Run("GetAllOrders successfully", func(t *testing.T) {
+		//Arrange
+		order := &Order{
+			UserID:   1,
+			ItemID:   1,
+			Quantity: 1,
+			Amount:   1.0,
+		}
+		suite.db.Create(order)
+
+		//Act
+		gotStatus, gotOrders, err := GetAllOrders(order.UserID)
+
+		//Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, int(gotStatus))
+		assert.Equal(t, order.Amount, gotOrders[0].Amount)
+		assert.Equal(t, order.ItemID, gotOrders[0].ItemID)
+		assert.Equal(t, order.Quantity, gotOrders[0].Quantity)
+		assert.Equal(t, order.UserID, gotOrders[0].UserID)
+		assert.Equal(t, order.ID, gotOrders[0].ID)
+		assert.EqualValues(t, 1, len(gotOrders))
+	})
+
+	t.Run("GetAllOrders failed due to invalid userID", func(t *testing.T) {
+		//Arrange
+		userID := uint32(0)
+
+		//Act
+		gotStatus, gotOrders, err := GetAllOrders(userID)
+
+		//Assert
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusBadRequest, int(gotStatus))
+		assert.Nil(t, gotOrders)
+	})
+
+	t.Run("GetAllOrders failed due to no orders", func(t *testing.T) {
+		//Arrange
+		userID := uint32(3)
+
+		//Act
+		gotStatus, gotOrders, err := GetAllOrders(userID)
+
+		//Assert
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusOK, int(gotStatus))
+		assert.Empty(t, gotOrders)
+	})
+}

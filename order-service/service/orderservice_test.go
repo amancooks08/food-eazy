@@ -283,3 +283,50 @@ func (suite *OrderServiceTestSuite) TestGetOrder() {
 		assert.Nil(t, getOrder)
 	})
 }
+
+
+func (suite *OrderServiceTestSuite) TestOrderService_GetAllOrders() {
+	t := suite.T()
+
+	t.Run("GetAllOrders success", func(t *testing.T) {
+		//Arrange
+		itemID, userID := uint32(1), uint32(1)
+		quantity := uint32(4)
+
+		itemResponse := &proto.GetItemResponse{
+			StatusCode:  http.StatusOK,
+			Id:          itemID,
+			Name:        "item",
+			Description: "item description",
+			Price:       10,
+			Quantity:    12,
+		}
+
+		//Act
+		suite.service.client.(*mocks.InventoryServiceClient).On("GetItem", context.Background(), &proto.GetItemRequest{
+			Id: itemID}).Return(itemResponse, nil).Once()
+
+		suite.service.client.(*mocks.InventoryServiceClient).On("LowerQuantity", context.Background(), &proto.LowerQuantityRequest{
+			Id:       itemID,
+			Quantity: quantity,
+		}).Return(&proto.LowerQuantityResponse{
+			StatusCode: http.StatusOK,
+			Id:         itemID,
+			Quantity:   itemResponse.Quantity - quantity,
+		}, nil).Once()
+
+		_, order, _ := suite.service.PlaceOrder(userID, itemID, quantity)
+
+		//Act
+		status, getAllOrders, err := suite.service.GetAllOrders(userID)
+
+		//Assert
+		assert.NoError(t, err)
+		assert.Equal(t, uint32(http.StatusOK), status)
+		assert.Equal(t, order.Amount, getAllOrders[0].Amount)
+		assert.Equal(t, order.ItemID, getAllOrders[0].ItemID)
+		assert.Equal(t, order.Quantity, getAllOrders[0].Quantity)
+		assert.Equal(t, order.UserID, getAllOrders[0].UserID)
+		assert.Equal(t, order.ID, getAllOrders[0].ID)
+	})
+}

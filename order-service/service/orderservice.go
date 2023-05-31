@@ -55,15 +55,28 @@ func (service *OrderService) PlaceOrder(userID uint32, itemID uint32, quantity u
 	return status, order, nil
 }
 
-func (service *OrderService) GetOrder(userID uint32) (uint32, *models.Order, error) {
-	if userID == 0 {
+func (service *OrderService) GetOrder(orderID uint32) (uint32, *models.Order, error) {
+	if orderID == 0 {
 		return http.StatusBadRequest, nil, errors.ErrEmptyField
 	}
 
-	status, order, err := models.GetOrder(userID)
+	status, order, err := models.GetOrder(orderID)
 	if err != nil {
 		return status, nil, err
 	}
 
 	return http.StatusOK, order, nil
+}
+
+func (service *OrderService) GetAllOrders(userID uint32) (uint32, []*models.Order, error) {
+	status, orders, err := models.GetAllOrders(userID)
+	if err != nil {
+		return status, nil, err
+	}
+
+	if len(orders) == 0 {
+		return http.StatusOK, orders, errors.ErrNoOrdersAvailable
+	}
+
+	return http.StatusOK, orders, nil
 }

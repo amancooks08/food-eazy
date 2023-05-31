@@ -3,6 +3,7 @@ package models
 import (
 	"net/http"
 	"order-service/errors"
+
 	"gorm.io/gorm"
 )
 
@@ -33,15 +34,31 @@ func CreateOrder(order *Order) (uint32, error) {
 	return http.StatusCreated, nil
 }
 
-func GetOrder(userID uint32) (uint32, *Order, error){
-	if userID == 0 {
+func GetOrder(orderID uint32) (uint32, *Order, error) {
+	if orderID == 0 {
 		return http.StatusBadRequest, nil, errors.ErrEmptyField
 	}
 
 	order := &Order{}
-	if err := db.Where("user_id = ?", userID).First(order).Error; err != nil {
+	err := db.Where("id = ?", orderID).First(&order).Error
+
+	if err == gorm.ErrRecordNotFound {
+		return http.StatusNotFound, nil, err
+	} else if err != nil {
 		return http.StatusInternalServerError, nil, err
 	}
-	
+
 	return http.StatusOK, order, nil
+}
+
+func GetAllOrders(userID uint32) (uint32, []*Order, error) {
+	if userID == 0 {
+		return http.StatusBadRequest, nil, errors.ErrEmptyField
+	}
+	orders := []*Order{}
+	err := db.Where("user_id = ?", userID).Find(&orders).Error;
+	if err != nil && err != gorm.ErrRecordNotFound{
+		return http.StatusInternalServerError, nil, err
+	}
+	return http.StatusOK, orders, nil
 }
