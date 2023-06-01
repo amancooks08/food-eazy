@@ -66,8 +66,10 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 		if err != nil {
 			t.Errorf("error while marshalling expected response: %v", err)
 		}
+		request, err := json.Marshal(requestBody)
+		assert.NoError(t, err)
 
-		jsonRequest := `{"name" : "test1", "email" : "test1@mail.com", "password" : "test@1234", "phone_number" : "9876543987" , "role":"USER"}`
+		jsonRequest := string(request)
 		req := httptest.NewRequest("POST", "/register", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 
@@ -115,8 +117,10 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 		if err != nil {
 			t.Errorf("error while marshalling expected response: %v", err)
 		}
+		request, err := json.Marshal(requestBody)
+		assert.NoError(t, err)
 
-		jsonRequest := `{"name" : "test1", "email" : "testting@mailcom", "password" : "test@1234", "phone_number" : "9876543987" , "role":"USER"}`
+		jsonRequest := string(request)
 		req := httptest.NewRequest("POST", "/register", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 
@@ -164,7 +168,10 @@ func (suite *AuthHandlerTestSuite) TestRegisterUser() {
 			t.Errorf("error while marshalling expected response: %v", err)
 		}
 
-		jsonRequest := `{"name" : "test1", "email" : "testting@mailcom", "password" : "test@1234", "phone_number" : "9876543987" , "role":"USER"}`
+		request, err := json.Marshal(requestBody)
+		assert.NoError(t, err)
+
+		jsonRequest := string(request)
 		req := httptest.NewRequest("POST", "/register", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 
@@ -226,8 +233,9 @@ func (suite *AuthHandlerTestSuite) TestLoginUser() {
 		if err != nil {
 			t.Errorf("error while marshalling expected response: %v", err)
 		}
-
-		jsonRequest := `{"email" : "test2@mailing.com", "password" : "test@1234"}`
+		request, err := json.Marshal(requestBody)
+		assert.NoError(t, err)
+		jsonRequest := string(request)
 		req := httptest.NewRequest("POST", "/login", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 
@@ -271,7 +279,10 @@ func (suite *AuthHandlerTestSuite) TestLoginUser() {
 			t.Errorf("error while marshalling expected response: %v", err)
 		}
 
-		jsonRequest := `{"email" : "test@com", "password" : "test@1234"}`
+		request, err := json.Marshal(requestBody)
+		assert.NoError(t, err)
+
+		jsonRequest := string(request)
 		req := httptest.NewRequest("POST", "/login", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 
@@ -316,7 +327,10 @@ func (suite *AuthHandlerTestSuite) TestLoginUser() {
 			t.Errorf("error while marshalling expected response: %v", err)
 		}
 
-		jsonRequest := `{"email" : "test@com", "password" : "test@1234"}`
+		request, err := json.Marshal(requestBody)
+		assert.NoError(t, err)
+
+		jsonRequest := string(request)
 		req := httptest.NewRequest("POST", "/login", strings.NewReader(jsonRequest))
 		res := httptest.NewRecorder()
 
